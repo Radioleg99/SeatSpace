@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axiosInstance from '../services/axios';
+import { useRoute } from 'vue-router';
 
+const route = useRoute()
 const theaterList = ref([])
 
 const getTheaterList = async () => {
@@ -15,6 +17,10 @@ const getTheaterList = async () => {
     theaterList.value = res.data
   }).catch((err) => {
     console.log(err)
+  })
+
+  onMounted(() => {
+    console.log(route)
   })
 }
 
