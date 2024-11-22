@@ -15,11 +15,8 @@ let showId
 let isLayoutPage = ref(true)
 
 onMounted(() => {
+  console.log('Show ID:', route.params.id)
   blockScroll()
-
-  showId = route.params.id
-  console.log('Show ID:', showId)
-
   renderSeatCanvas(getHallLayoutData(showId))
 })
 
@@ -29,10 +26,18 @@ onBeforeUnmount(() => {
 
 // tab bar switch page
 function switchPage(e) {
-  console.log('switch page', e.target.id)
-  isLayoutPage.value = !isLayoutPage.value
+  console.log('switch page: ', e.target.id, "isLayoutPage: ", isLayoutPage.value)
+  const doSwitch = () => isLayoutPage.value = !isLayoutPage.value
 
-  console.log('isLayoutPage', isLayoutPage)
+  const targetId = e.target.id
+  if (targetId === 'tabBar') {
+    doSwitch()
+  } else if (targetId === 'tabSeat' && !isLayoutPage.value) {
+    doSwitch()
+  } else if (targetId === 'tabShow' && isLayoutPage.value) {
+    doSwitch()
+  }
+
 }
 
 // Main render function
@@ -203,7 +208,7 @@ function allowScroll() {
 </script>
 
 <template>
-  <!-- Control bar -->
+  <!-- Control -->
   <BackButton class="backBtn" />
   <div class="tabBar" @click="switchPage" id="tabBar">
     <div class="tabBarStatusBar" id="tabStatusBar" :style="{ left: isLayoutPage ? 0 : '129px' }">
@@ -211,6 +216,7 @@ function allowScroll() {
     <div class="tabBarSeatText" id="tabSeat" :style="{ color: isLayoutPage ? 'white' : '#6E6E6E' }">SEAT</div>
     <div class="tabBarShowText" id="tabShow" :style="{ color: isLayoutPage ? '#6E6E6E' : 'white' }">SHOW</div>
   </div>
+
 
   <!-- Seat Layout -->
   <div v-show="isLayoutPage" id="seatCanvasContainer" class="bg"></div>
@@ -226,15 +232,15 @@ function allowScroll() {
 
 .backBtn {
   position: fixed;
-  top: 57px;
+  top: 40px;
   left: 39px;
   z-index: 2;
 }
 
 .tabBar {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 40px;
+  right: 39px;
   width: 255px;
   height: 35px;
   background-color: #E9EBEA;
@@ -249,15 +255,17 @@ function allowScroll() {
   left: 48px;
   font-size: 14px;
   font-weight: 700;
+  transition: all 0.3s;
 }
 
 .tabBarShowText {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 48px;
+  right: 36px;
   font-size: 14px;
   font-weight: 700;
+  transition: all 0.3s;
 }
 
 .tabBarStatusBar {

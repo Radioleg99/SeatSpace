@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axiosInstance from '../services/axios'
-import singletheaterCard from '../components/singletheaterCard.vue'
+// import singletheaterCard from '../components/singletheaterCard.vue'
 import singleshowCard from '../components/singleshowcard.vue'
 
 const router = useRouter()
@@ -95,7 +95,8 @@ onMounted(() => {
 			</button>
 			<!-- 搜索框 -->
 			<div class="searchBox">
-				<input v-model.lazy="searchQuery" class="searchboxDescription" placeholder="theater name, show name, etc." @keyup.enter="performSearch" />
+				<input v-model.lazy="searchQuery" class="searchboxDescription" placeholder="theater name, show name, etc."
+					@keyup.enter="performSearch" />
 				<button class="searchButton" @click="performSearch">
 					<img class="searchIcon" src="./assets/icon/search.svg" alt="search" />
 				</button>
@@ -107,9 +108,10 @@ onMounted(() => {
 			<div v-if="showNoResult" class="no-result">No result found</div>
 			<div v-else class="search-results">
 				<!--使用单个剧院卡片组件 -->
-				<singletheaterCard v-for="theater in theaterList" :key="theater.id" :image="theater.image" :name="theater.name" :description="theater.description" @click="goToTheaterDetail(theater.id)" />
+				<!-- <singletheaterCard v-for="theater in theaterList" :key="theater.id" :image="theater.image" :name="theater.name" :description="theater.description" @click="goToTheaterDetail(theater.id)" /> -->
 				<!--使用单个show组件-->
-				<singleshowCard v-for="show in showList" :key="show.showId" :image="show.image" :name="show.name" :time="show.time" :rating="show.rating" @click="goToShowDetail(theater.id)" />
+				<singleshowCard v-for="show in showList" :key="show.showId" :image="show.image" :name="show.name"
+					:time="show.time" :rating="show.rating" @click="goToShowDetail(theater.id)" />
 			</div>
 		</div>
 	</div>
@@ -148,7 +150,8 @@ onMounted(() => {
 	justify-content: center;
 	width: 35px;
 	height: 35px;
-	margin-right: 10px; /* 与搜索框的间距 */
+	margin-right: 10px;
+	/* 与搜索框的间距 */
 	border-radius: 50%;
 }
 
@@ -167,34 +170,47 @@ onMounted(() => {
 	width: 292px;
 	height: 50px;
 	border-radius: 32px;
-	background-color: #e9ebea; /* 默认背景颜色 */
-	border: 0.5px solid transparent; /* 无边框，但预留位置 */
-	transition: background-color 0.3s, border-color 0.3s; /* 添加平滑过渡效果 */
+	background-color: #e9ebea;
+	/* 默认背景颜色 */
+	border: 0.5px solid transparent;
+	/* 无边框，但预留位置 */
+	transition: background-color 0.3s, border-color 0.3s;
+	/* 添加平滑过渡效果 */
 }
 
 /* 输入框样式 */
 .searchboxDescription {
 	width: 100%;
-	border: none; /* 移除输入框自带边框 */
-	outline: none; /* 移除聚焦时默认的外边框 */
-	background-color: transparent; /* 背景透明，与父容器一致 */
+	border: none;
+	/* 移除输入框自带边框 */
+	outline: none;
+	/* 移除聚焦时默认的外边框 */
+	background-color: transparent;
+	/* 背景透明，与父容器一致 */
 	font-family: 'InputFont', sans-serif;
 	font-size: 16px;
 	color: #333;
 	padding: 0;
 }
+
 /* Placeholder 样式 */
 .searchboxDescription::placeholder {
-	font-family: 'PlaceholderFont', sans-serif; /* Placeholder 字体 */
+	font-family: 'PlaceholderFont', sans-serif;
+	/* Placeholder 字体 */
 	color: #aaa;
 	font-style: italic;
 }
+
 /* 聚焦时的样式：容器和输入框统一变化 */
 .searchBox:focus-within {
-	background-color: #fff; /* 聚焦时背景颜色 */
-	border-color: #0078ff; /* 聚焦时边框颜色 */
-	box-shadow: 0 0 5px rgba(0, 120, 255, 0.5); /* 可选的阴影效果 */
+	background-color: #fff;
+	/* 聚焦时背景颜色 */
+	border-color: #0078ff;
+	/* 聚焦时边框颜色 */
+	box-shadow: 0 0 5px rgba(0, 120, 255, 0.5);
+	/* 可选的阴影效果 */
 }
+
 .searchButton {
 	background: none;
 	border: none;
@@ -203,6 +219,7 @@ onMounted(() => {
 	justify-content: center;
 	padding: 5px;
 }
+
 .searchIcon {
 	width: 24px;
 	height: 24px;
@@ -220,11 +237,16 @@ onMounted(() => {
 /* 搜索结果样式 */
 .search-results {
 	display: flex;
-	flex-direction: column; /* Set items to align vertically */
-	justify-content: flex-start; /* Align items to the top (default for column direction) */
-	align-items: center; /* Center items horizontally */
-	gap: 18px; /* Gap between items in the vertical direction */
-	margin-top: 20px; /* Space above the entire container */
+	flex-direction: column;
+	/* Set items to align vertically */
+	justify-content: flex-start;
+	/* Align items to the top (default for column direction) */
+	align-items: center;
+	/* Center items horizontally */
+	gap: 18px;
+	/* Gap between items in the vertical direction */
+	margin-top: 20px;
+	/* Space above the entire container */
 }
 
 /* 响应式设计 */

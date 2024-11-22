@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue'
 import axiosInstance from '../services/axios'
 import { useRoute, useRouter } from 'vue-router'
 
-import singletheaterCard from '../components/singletheaterCard.vue'
+// import singletheaterCard from '../components/singletheaterCard.vue'
 
 // this is for using push to navigate
 const longitude = ref(0)
@@ -12,7 +12,7 @@ const latitude = ref(0)
 const route = useRoute()
 const router = useRouter()
 const theaterList = ref([])
-const router = useRouter()
+// const router = useRouter()
 const performanceList = ref([])
 
 const getLocation = async () => {
@@ -96,7 +96,7 @@ onMounted(async () => {
 	</div> -->
 			<div class="multitheater-container">
 				<!-- 使用 singletheaterCard 动态渲染剧院列表 -->
-				<singletheaterCard v-for="theater in theaterList" :key="theater.id" :image="theater.imgUrl" :name="theater.name" :description="theater.description" @click="goToTheaterDetail(theater.id)" />
+				<!-- <singletheaterCard v-for="theater in theaterList" :key="theater.id" :image="theater.imgUrl" :name="theater.name" :description="theater.description" @click="goToTheaterDetail(theater.id)" /> -->
 			</div>
 		</div>
 		<!-- 此处有问题需要改善 -->
@@ -104,7 +104,8 @@ onMounted(async () => {
 			<div class="performance-title">Performance</div>
 			<div class="performance-container">
 				<div class="multiperformance-container">
-					<div v-for="performance in performanceList" :key="performance.id" class="performance-item" @click="goToTheaterDetail(theater.id)">
+					<div v-for="performance in performanceList" :key="performance.id" class="performance-item"
+						@click="goToTheaterDetail(theater.id)">
 						<img :src="theater.image" alt="performance image" class="performance-img" />
 						<div class="performance-info">
 							<div class="performance-name">{{ performancename }}</div>
@@ -126,31 +127,39 @@ onMounted(async () => {
 .frontpage-layout {
 	display: flex;
 	flex-direction: column;
-	height: 100vh; /* 占满视窗高度 */
-	overflow: hidden; /* 禁止页面滚动 */
+	height: 100vh;
+	/* 占满视窗高度 */
+	overflow: hidden;
+	/* 禁止页面滚动 */
 }
 
 .head-Layout {
 	display: flex;
 	justify-content: space-between;
-	align-items: flex-start; /* 子元素顶部对齐 */
-	padding-top: 20px; /* 调整这个值以控制向下偏移的程度 */
+	align-items: flex-start;
+	/* 子元素顶部对齐 */
+	padding-top: 20px;
+	/* 调整这个值以控制向下偏移的程度 */
 	box-shadow: 0px 16px 32px -4px rgba(12, 12, 13, 0.1), 0px 4px 4px -4px rgba(12, 12, 13, 0.05);
 	background: linear-gradient(180deg, #e2f2a2, #e2f2a7 0.01%, #e9ebea 59%);
 	z-index: 10;
 }
+
 .title {
-	margin: 0; /* 移除外边距，防止垂直方向的偏移 */
+	margin: 0;
+	/* 移除外边距，防止垂直方向的偏移 */
 	font-size: 24px;
 	line-height: 1.5;
 	font-family: jsMath-cmbx10;
 	color: #480b91;
 }
+
 .search-Button {
 	background: none;
 	border: none;
 	cursor: pointer;
 }
+
 .search-Icon {
 	width: 36px;
 	height: 36px;
@@ -168,6 +177,7 @@ onMounted(async () => {
 	flex-direction: column;
 	align-items: center;
 }
+
 .decoration {
 	margin-top: 40px;
 	width: 54px;
@@ -177,6 +187,7 @@ onMounted(async () => {
 	margin-right: auto;
 	/* 水平居中 */
 }
+
 .theater-title {
 	font-size: 24px;
 	font-family: jsMath-cmbx10;
@@ -190,11 +201,15 @@ onMounted(async () => {
 	gap: 21px;
 	width: 100vw;
 	overflow-x: auto;
-	scrollbar-width: none; /* Firefox */
+	scrollbar-width: none;
+	/* Firefox */
 }
+
 .multitheater-container::-webkit-scrollbar {
-	display: none; /* Safari and Chrome */
+	display: none;
+	/* Safari and Chrome */
 }
+
 .theater-item {
 	display: flex;
 	flex-direction: column;
@@ -210,6 +225,7 @@ onMounted(async () => {
 	/* 可选：增加轻微阴影 */
 	margin-left: 16px;
 }
+
 .theater-img {
 	width: 325px;
 	height: 142px;
@@ -217,16 +233,19 @@ onMounted(async () => {
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
 }
+
 .theater-card {
 	display: flex;
 	flex-direction: column;
 }
+
 .theater-info {
 	display: flex;
 	flex-direction: row;
 	gap: 8.25px;
 	margin-bottom: 10px;
 }
+
 .color-icon {
 	border-radius: 50%;
 	background-color: #9747ff;
@@ -234,11 +253,13 @@ onMounted(async () => {
 	width: 22px;
 	margin-left: 10px;
 }
+
 .theater-name {
 	font-size: 10px;
 	font-family: Sora;
 	color: #2f2f42;
 }
+
 .theater-description {
 	margin-left: 10px;
 	font-size: 10px;
@@ -275,36 +296,43 @@ onMounted(async () => {
 	margin-left: auto;
 	margin-right: auto;
 }
+
 .performance-item {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	flex: 1;
 }
+
 .performance-img {
 	width: 95px;
 	height: 139px;
 	margin-bottom: 5px;
 	border-radius: 10px;
 }
+
 .performance-info {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 }
+
 .performance-name {
 	text-align: center;
 	font-size: 13px;
 	line-height: 14px;
 	font-family: Helvetica;
 }
+
 .location-info {
 	display: flex;
 }
+
 .location-icon {
 	width: 8px;
 	height: 8px;
 }
+
 .location-name {
 	font-size: 8px;
 	line-height: 14px;
