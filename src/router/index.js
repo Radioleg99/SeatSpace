@@ -8,8 +8,8 @@ import Comment from '../views/Comment.vue'
 const routes = [
 	{ path: '/', name: 'frontpage', component: FrontPage },
 	{ path: '/search', name: 'search', component: Search },
-	{ path: '/theater', name: 'theater', component: Theater },
-	{ path: '/show', name: 'show', component: Show },
+	{ path: '/theater/:id', name: 'theater', component: Theater },
+	{ path: '/show/:id', name: 'show', component: Show },
 	{ path: '/comment', name: 'comment', component: Comment },
 ]
 

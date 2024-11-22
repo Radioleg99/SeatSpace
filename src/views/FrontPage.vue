@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axiosInstance from '../services/axios';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
+const router = useRouter()
 const theaterList = ref([])
 
 const getTheaterList = async () => {
@@ -19,10 +20,12 @@ const getTheaterList = async () => {
     console.log(err)
   })
 
-  onMounted(() => {
-    console.log(route)
-  })
+  router.push('/theater/1')
 }
+
+onMounted(() => {
+  console.log(route)
+})
 
 </script>
 
