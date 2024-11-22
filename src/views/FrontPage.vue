@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref, onMounted } from 'vue'
 import axiosInstance from '../services/axios'
 import { useRoute, useRouter } from 'vue-router'
@@ -9,6 +10,7 @@ import singletheaterCard from '../components/singletheaterCard.vue'
 const longitude = ref(0)
 const latitude = ref(0)
 const route = useRoute()
+const router = useRouter()
 const theaterList = ref([])
 const router = useRouter()
 const performanceList = ref([])
