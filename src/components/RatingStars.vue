@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps, toRef } from "vue";
 
 const props = defineProps({
   totalStars: {
@@ -31,7 +31,7 @@ const props = defineProps({
 const emit = defineEmits(["update:rating"]);
 
 const { totalStars, mode, size } = props;
-const rating = ref(props.rating);
+const rating = toRef(props, "rating");
 
 const getStarImgUrl = (i) => {
   const ratingValue = rating.value;

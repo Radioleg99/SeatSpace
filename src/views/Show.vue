@@ -1,6 +1,6 @@
 <script setup lang="js">
 import Konva from 'konva';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import seat_d from '../assets/seatPath.js';
 import getHallLayoutData from '../services/getHallLayoutData.js';
@@ -9,26 +9,40 @@ import BackButton from '../components/BackButton.vue';
 import RatingStars from '../components/RatingStars.vue';
 import getSeatComments from '../services/getSeatComments.js';
 import router from '../router/index.js';
+import getShowComments from '../services/getShowComments.js';
 
 const route = useRoute()
 
 // params for canvas
 let initOverflowSetting
-const isLayoutPage = ref(true)  // page flag, true for layout page, false for comments page
+
+// params for tab bar
+const isLayoutPage = ref(false)
 
 // params for seat's comments
 const commentsList = ref([])
 const isCommentPop = ref(false)
 const currentChosedSeatId = ref(0)
 
+// params for show page
+let isShowPageOpened = false
+const showBasicData = ref({})
+const showComments = ref([])
+
 onMounted(() => {
   console.log('Show ID:', route.params.id)
-  blockScroll()
+
+  initOverflowSetting = document.body.style.overflowY
+  document.body.style.overflowY = 'hidden'
   renderSeatCanvas(getHallLayoutData(route.params.id))
+
+  const showData = getShowComments(route.params.id)
+  showBasicData.value = showData.showBasicInfo
+  showComments.value = showData.comments
 })
 
 onBeforeUnmount(() => {
-  allowScroll()
+  document.body.style.overflowY = initOverflowSetting
 })
 
 // tab bar switch page
@@ -45,6 +59,23 @@ function switchPage(e) {
     doSwitch()
   }
 }
+
+watch(isLayoutPage, (newVal) => {
+  if (newVal) {
+    document.body.style.overflowY = 'hidden'
+  } else {
+    console.log('set overflowY to scroll')
+    document.body.style.overflowY = 'scroll'
+
+    // fetch show data when first open show page
+    if (!isShowPageOpened) {
+      const showData = getShowComments(route.params.id)
+      showBasicData.value = showData.showBasicInfo
+      showComments.value = showData.comments
+      isShowPageOpened = !isShowPageOpened
+    }
+  }
+})
 
 function closeCommentPop() {
   isCommentPop.value = false
@@ -307,22 +338,13 @@ function renderSeatCanvas(hallLayoutData) {
     }
   }
 }
-
-function blockScroll() {
-  initOverflowSetting = window.document.body.style.overflow
-  document.body.style.overflow = 'hidden';
-}
-
-function allowScroll() {
-  document.body.style.overflow = initOverflowSetting;
-}
 </script>
 
 <template>
   <!-- Control -->
   <BackButton class="backBtn" />
   <div class="tabBar" @click="switchPage" id="tabBar">
-    <div class="tabBarStatusBar" id="tabStatusBar" :style="{ left: isLayoutPage ? 0 : '129px' }">
+    <div class="tabBarStatusBar" id="tabStatusBar" :style="{ left: isLayoutPage ? 0 : '124px' }">
     </div>
     <div class="tabBarSeatText" id="tabSeat" :style="{ color: isLayoutPage ? 'white' : '#6E6E6E' }">SEAT</div>
     <div class="tabBarShowText" id="tabShow" :style="{ color: isLayoutPage ? '#6E6E6E' : 'white' }">SHOW</div>
@@ -352,13 +374,52 @@ function allowScroll() {
   </div>
 
   <!-- Seat Layout -->
-  <div v-show="isLayoutPage" id="seatCanvasContainer" class="bg"></div>
+  <div v-show="isLayoutPage" id="seatCanvasContainer" class="layoutBg"></div>
+
   <!-- Show Detail -->
-  <div v-show="!isLayoutPage">comment</div>
+  <div v-show="!isLayoutPage" class="showBg">
+
+
+    <!-- show basic info -->
+    <div class="showBasicInfoContainer">
+      <img :src="showBasicData.imgUrl" alt="showPoster" class="poster" />
+      <div class="infoBox">
+        <div class="showName">{{ showBasicData.showName }}</div>
+        <div class="showTheater">
+          <img src="../assets/map-pin.svg" />
+          <span> {{ showBasicData.theater + ' ' + showBasicData.hall }}</span>
+        </div>
+        <div class="showTheater">
+          <img src="../assets/clock.svg" />
+          <span>
+            {{ showBasicData.startTime }}
+          </span>
+        </div>
+        <RatingStars :rating="showBasicData.rating" size="8.5" />
+      </div>
+    </div>
+
+    <!-- show comments -->
+    <div v-for="comment in showComments" class="commentBox">
+      <div class="commentImgBox">
+        <img v-for="img in comment.imgUrl" :src="img" alt="commentImg" class="commentImg" />
+      </div>
+      <div class="commentText">{{ comment.content }}</div>
+      <div class="commentStar">
+        <RatingStars :rating="comment.rating" size="10.5" />
+        <div class="commentDate">{{ comment.data }}</div>
+      </div>
+    </div>
+
+    <!-- poster background -->
+    <div class="showBgImg" :style="{
+      background: `linear-gradient(180deg, rgba(0, 0, 0, 0.42) 24.5%, #505E2C 86.5%), url(${showBasicData.imgUrl}) lightgray 50% / cover no-repeat`
+    }"></div>
+  </div>
 </template>
 
 <style scoped>
-.bg {
+.layoutBg {
   background-color: #1A1A24;
   z-index: 1;
 }
@@ -366,18 +427,18 @@ function allowScroll() {
 .backBtn {
   position: fixed;
   top: 40px;
-  left: 39px;
-  z-index: 2;
+  left: 30px;
+  z-index: 10;
 }
 
 .tabBar {
   position: fixed;
   top: 40px;
-  right: 39px;
+  right: 30px;
   width: 255px;
   height: 35px;
   background-color: #E9EBEA;
-  z-index: 2;
+  z-index: 10;
   border-radius: 50px;
 }
 
@@ -395,7 +456,7 @@ function allowScroll() {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 36px;
+  right: 39px;
   font-size: 14px;
   font-weight: 700;
   transition: all 0.3s;
@@ -488,5 +549,141 @@ function allowScroll() {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+}
+
+.showBg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: calc(100% - 60px);
+  padding: 0 30px;
+  background-color: #505E2C;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: scroll;
+}
+
+.showBgImg {
+  height: 237px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.showBasicInfoContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 17px;
+  margin-top: 100px;
+
+  z-index: 2;
+  color: #FFF;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 10px;
+}
+
+.showBasicInfoContainer .poster {
+  width: 120px;
+  height: 160px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.showBasicInfoContainer .infoBox {
+  flex: 1;
+}
+
+.showBasicInfoContainer .showName {
+  color: #FFF;
+  text-align: left;
+  font-family: Helvetica;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 27.879px;
+
+  word-wrap: break-word;
+  margin-bottom: 17px;
+  flex: 1;
+}
+
+.showBasicInfoContainer .showTheater {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 7px;
+}
+
+.showBasicInfoContainer .infoBox:last-child {
+  margin-bottom: 12.5px;
+}
+
+.showCommentsBox {
+  position: fixed;
+  top: 301px;
+  left: 30px;
+  z-index: 2;
+  width: calc(100% - 60px);
+  max-height: calc(100% - 301px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  gap: 14px;
+}
+
+.commentBox {
+  border-radius: 20px;
+  background: var(--main-Background-cold, #E9EBEA);
+  flex-shrink: 0;
+  padding: 10px;
+}
+
+.commentImgBox {
+  display: flex;
+  gap: 10px;
+  overflow-x: scroll;
+  margin-bottom: 14px;
+}
+
+.commentImg {
+  width: 118px;
+  height: 118px;
+  flex-shrink: 0;
+}
+
+.commentText {
+  color: #000;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 14px;
+  margin-bottom: 14px;
+}
+
+.commentStar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.commentDate {
+  color: #000;
+  text-align: right;
+  font-family: Helvetica;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 10px;
 }
 </style>
