@@ -428,7 +428,7 @@ function renderSeatCanvas(hallLayoutData) {
   position: fixed;
   top: 40px;
   left: 30px;
-  z-index: 10;
+  z-index: 2;
 }
 
 .tabBar {
@@ -438,7 +438,7 @@ function renderSeatCanvas(hallLayoutData) {
   width: 255px;
   height: 35px;
   background-color: #E9EBEA;
-  z-index: 10;
+  z-index: 2;
   border-radius: 50px;
 }
 
@@ -507,7 +507,7 @@ function renderSeatCanvas(hallLayoutData) {
   position: relative;
 }
 
-.commentImg {
+.singleCommentContainer .commentImg {
   height: 191px;
   width: 100%;
   border-radius: 10px;
