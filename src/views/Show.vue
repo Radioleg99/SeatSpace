@@ -47,7 +47,7 @@ function renderSeatCanvas(hallLayoutData) {
     container: 'seatCanvasContainer',
     width: window.innerWidth,
     height: window.innerHeight,
-    draggable: true
+    draggable: true,
   }
   const stage = new Konva.Stage(stageData);
 
@@ -79,7 +79,9 @@ function renderSeatCanvas(hallLayoutData) {
 
   seatsLayer.add(seatGroup)
   seatsLayer.add(stageShape)
-  stage.add(seatsLayer);
+  stage.add(seatsLayer)
+
+  addPinchZoom(stage)
 }
 
 function createStageShape() {
@@ -204,6 +206,98 @@ function blockScroll() {
 
 function allowScroll() {
   document.body.style.overflow = initOverflowSetting;
+}
+
+// pinch to zoom function
+function addPinchZoom(stage) {
+
+  let lastDist = 0;
+  let lastCenter = { x: 0, y: 0 };
+  let isPinching = false;
+
+  stage.on('touchstart', (e) => {
+    // const touchLength = e.evt.touches.length
+    // console.log('touchstart:', touchLength);
+
+    if (e.evt.touches.length !== 2) return;
+
+    e.evt.preventDefault();
+    console.log('set undraggable')
+    stage.setDraggable(false);
+
+    isPinching = true;
+    const touch1 = e.evt.touches[0];
+    const touch2 = e.evt.touches[1];
+    lastDist = getDistance(touch1, touch2);
+    lastCenter = getCenter(touch1, touch2);
+  });
+
+  stage.on('touchmove', (e) => {
+    // const touchLength = e.evt.touches.length
+    // console.log('touchsmove:', touchLength);
+
+    if (!isPinching) return;
+    if (e.evt.touches.length !== 2) return;
+
+    e.evt.preventDefault();
+    const touch1 = e.evt.touches[0];
+    const touch2 = e.evt.touches[1];
+    const dist = getDistance(touch1, touch2);
+    const scale = dist / lastDist;
+
+    // get the current scale
+    const oldScale = stage.scaleX();
+    const newScale = oldScale * scale;
+
+    // set the new scale limit
+    if (newScale < 0.5 || newScale > 3) return;
+
+    stage.scale({ x: newScale, y: newScale });
+
+    // set the new position
+    const mousePointTo = {
+      x: (lastCenter.x - stage.x()) / oldScale,
+      y: (lastCenter.y - stage.y()) / oldScale,
+    };
+
+    const newPos = {
+      x: lastCenter.x - mousePointTo.x * newScale,
+      y: lastCenter.y - mousePointTo.y * newScale,
+    };
+    stage.position(newPos);
+
+    stage.batchDraw();
+
+    lastDist = dist;
+    lastCenter = getCenter(touch1, touch2);
+  });
+
+  stage.on('touchend', (e) => {
+    // const touchLength = e.evt.touches.length
+    // console.log('touchend:', touchLength);
+
+    if (e.evt.touches.length < 2) {
+      isPinching = false;
+
+      console.log('set draggable')
+      stage.setDraggable(true);
+    }
+  });
+
+  // get distance between two points
+  function getDistance(t1, t2) {
+    const dx = t2.clientX - t1.clientX;
+    const dy = t2.clientY - t1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  // get center of two points
+  function getCenter(t1, t2) {
+    return {
+      x: (t1.clientX + t2.clientX) / 2,
+      y: (t1.clientY + t2.clientY) / 2,
+    };
+  }
 }
 </script>
 
