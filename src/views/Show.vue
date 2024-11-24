@@ -1,6 +1,6 @@
 <script setup lang="js">
 import Konva from 'konva';
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import seat_d from '../assets/seatPath.js';
 import getHallLayoutData from '../services/getHallLayoutData.js';
@@ -13,9 +13,6 @@ import getShowComments from '../services/getShowComments.js';
 
 const route = useRoute()
 
-// params for canvas
-let initOverflowSetting
-
 // params for tab bar
 const isLayoutPage = ref(true)
 
@@ -25,28 +22,25 @@ const isCommentPop = ref(false)
 const currentChosedSeatId = ref(0)
 
 // params for show page
-let isShowPageOpened = false
 const showBasicData = ref({})
 const showComments = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   console.log('Show ID:', route.params.id)
-  initOverflowSetting = document.body.style.overflowY
-  document.body.style.overflowY = 'hidden'
-  renderSeatCanvas(getHallLayoutData(route.params.id))
+  renderSeatCanvas(await getHallLayoutData(route.params.id))
 
-  const showData = getShowComments(route.params.id)
-  showBasicData.value = showData.showBasicInfo
-  showComments.value = showData.comments
-})
-
-onBeforeUnmount(() => {
-  document.body.style.overflowY = initOverflowSetting
+  getShowComments(route.params.id).then((showData) => {
+    showBasicData.value = showData.showBasicInfo
+    showComments.value = showData.comments
+  })
 })
 
 // tab bar switch page
 function switchPage(e) {
-  const doSwitch = () => isLayoutPage.value = !isLayoutPage.value
+  const doSwitch = () => {
+    isLayoutPage.value = !isLayoutPage.value
+    isCommentPop.value = false
+  }
 
   const targetId = e.target.id
   if (targetId === 'tabBar') {
@@ -57,23 +51,6 @@ function switchPage(e) {
     doSwitch()
   }
 }
-
-watch(isLayoutPage, (newVal) => {
-  isCommentPop.value = false
-  if (newVal) {
-    document.body.style.overflowY = 'hidden'
-  } else {
-    document.body.style.overflowY = 'scroll'
-
-    // fetch show data when first open show page
-    if (!isShowPageOpened) {
-      const showData = getShowComments(route.params.id)
-      showBasicData.value = showData.showBasicInfo
-      showComments.value = showData.comments
-      isShowPageOpened = !isShowPageOpened
-    }
-  }
-})
 
 function closeCommentPop() {
   isCommentPop.value = false
@@ -208,10 +185,10 @@ function renderSeatCanvas(hallLayoutData) {
     seatGroup.add(seatNumber)
 
     // add click event to seat
-    seatGroup.on('click tap', function (e) {
+    seatGroup.on('click tap', async (e) => {
       console.log('clicked on seat', e.currentTarget.attrs.seatId);
       isCommentPop.value = true
-      commentsList.value = getSeatComments(e.currentTarget.attrs.seatId)
+      commentsList.value = await getSeatComments(e.currentTarget.attrs.seatId)
       currentChosedSeatId.value = e.currentTarget.attrs.seatId
     });
 
@@ -364,10 +341,8 @@ function renderSeatCanvas(hallLayoutData) {
 
   <!-- Show Detail -->
   <div v-show="!isLayoutPage" class="showBg">
-
-
     <!-- show basic info -->
-    <div class="showBasicInfoContainer">
+    <div v-if="showBasicData" class="showBasicInfoContainer">
       <img :src="showBasicData.imgUrl" alt="showPoster" class="poster" />
       <div class="infoBox">
         <div class="showName">{{ showBasicData.showName }}</div>
@@ -398,7 +373,7 @@ function renderSeatCanvas(hallLayoutData) {
     </div>
 
     <!-- poster background -->
-    <div class="showBgImg" :style="{
+    <div v-if="showBasicData" class="showBgImg" :style="{
       background: `linear-gradient(180deg, rgba(0, 0, 0, 0.42) 24.5%, #505E2C 86.5%), url(${showBasicData.imgUrl}) lightgray 50% / cover no-repeat`
     }"></div>
   </div>
@@ -408,6 +383,12 @@ function renderSeatCanvas(hallLayoutData) {
 .layoutBg {
   background-color: #1A1A24;
   z-index: 1;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .backBtn {
@@ -647,6 +628,7 @@ function renderSeatCanvas(hallLayoutData) {
   height: 118px;
   flex-shrink: 0;
   border-radius: 5px;
+  object-fit: cover;
 }
 
 .commentText {

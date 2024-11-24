@@ -1,9 +1,16 @@
-import sampleData from '../utils/seatExampleData.js'
+import axiosInstance from './axios.js'
 
-function getHallLayoutData(showId) {
-	//TODO: Fetch data from server
-	console.log('Fetching layout data for showId:', showId)
-	return sampleData
+async function getHallLayoutData(showId) {
+	return new Promise((resolve, reject) => {
+		axiosInstance
+			.get(`/show/seat/${showId}`)
+			.then((res) => {
+				resolve(res.data)
+			})
+			.catch((err) => {
+				reject(err)
+			})
+	})
 }
 
 export default getHallLayoutData
