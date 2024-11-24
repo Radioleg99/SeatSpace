@@ -17,7 +17,7 @@ const route = useRoute()
 let initOverflowSetting
 
 // params for tab bar
-const isLayoutPage = ref(false)
+const isLayoutPage = ref(true)
 
 // params for seat's comments
 const commentsList = ref([])
@@ -31,7 +31,6 @@ const showComments = ref([])
 
 onMounted(() => {
   console.log('Show ID:', route.params.id)
-
   initOverflowSetting = document.body.style.overflowY
   document.body.style.overflowY = 'hidden'
   renderSeatCanvas(getHallLayoutData(route.params.id))
@@ -47,7 +46,6 @@ onBeforeUnmount(() => {
 
 // tab bar switch page
 function switchPage(e) {
-  console.log('switch page: ', e.target.id, "isLayoutPage: ", isLayoutPage.value)
   const doSwitch = () => isLayoutPage.value = !isLayoutPage.value
 
   const targetId = e.target.id
@@ -61,10 +59,10 @@ function switchPage(e) {
 }
 
 watch(isLayoutPage, (newVal) => {
+  isCommentPop.value = false
   if (newVal) {
     document.body.style.overflowY = 'hidden'
   } else {
-    console.log('set overflowY to scroll')
     document.body.style.overflowY = 'scroll'
 
     // fetch show data when first open show page
@@ -254,13 +252,9 @@ function renderSeatCanvas(hallLayoutData) {
     let isPinching = false;
 
     stage.on('touchstart', (e) => {
-      // const touchLength = e.evt.touches.length
-      // console.log('touchstart:', touchLength);
-
       if (e.evt.touches.length !== 2) return;
 
       e.evt.preventDefault();
-      console.log('set undraggable')
       stage.setDraggable(false);
 
       isPinching = true;
@@ -271,9 +265,6 @@ function renderSeatCanvas(hallLayoutData) {
     });
 
     stage.on('touchmove', (e) => {
-      // const touchLength = e.evt.touches.length
-      // console.log('touchsmove:', touchLength);
-
       if (!isPinching) return;
       if (e.evt.touches.length !== 2) return;
 
@@ -311,13 +302,8 @@ function renderSeatCanvas(hallLayoutData) {
     });
 
     stage.on('touchend', (e) => {
-      // const touchLength = e.evt.touches.length
-      // console.log('touchend:', touchLength);
-
       if (e.evt.touches.length < 2) {
         isPinching = false;
-
-        console.log('set draggable')
         stage.setDraggable(true);
       }
     });
@@ -406,7 +392,7 @@ function renderSeatCanvas(hallLayoutData) {
       </div>
       <div class="commentText">{{ comment.content }}</div>
       <div class="commentStar">
-        <RatingStars :rating="comment.rating" size="10.5" />
+        <RatingStars :rating="parseFloat(comment.rating)" size="10.5" />
         <div class="commentDate">{{ comment.data }}</div>
       </div>
     </div>
@@ -660,6 +646,7 @@ function renderSeatCanvas(hallLayoutData) {
   width: 118px;
   height: 118px;
   flex-shrink: 0;
+  border-radius: 5px;
 }
 
 .commentText {
