@@ -3,9 +3,9 @@ import axios from 'axios'
 /**
  * current environment dev / prod / mock
  */
-// const env = 'dev'
+const env = 'dev'
 // const env = 'prod'
-const env = 'mock'
+// const env = 'mock'
 
 const axiosInstance = axios.create({
 	baseURL: getBaseUrl(),

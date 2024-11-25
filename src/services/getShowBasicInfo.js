@@ -1,9 +1,9 @@
 import axiosInstance from './axios'
 
-function getShowComments(showId) {
+function getShowBasicInfo(showId) {
 	return new Promise((resolve, reject) => {
 		axiosInstance
-			.get(`show/comment/${showId}`)
+			.get(`show/basic/${showId}`)
 			.then((res) => {
 				resolve(res.data)
 			})
@@ -11,4 +11,4 @@ function getShowComments(showId) {
 	})
 }
 
-export default getShowComments
+export default getShowBasicInfo

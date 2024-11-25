@@ -10,6 +10,7 @@ import RatingStars from '../components/RatingStars.vue';
 import getSeatComments from '../services/getSeatComments.js';
 import router from '../router/index.js';
 import getShowComments from '../services/getShowComments.js';
+import getShowBasicInfo from '../services/getShowBasicInfo.js';
 
 const route = useRoute()
 
@@ -29,9 +30,12 @@ onMounted(async () => {
   console.log('Show ID:', route.params.id)
   renderSeatCanvas(await getHallLayoutData(route.params.id))
 
-  getShowComments(route.params.id).then((showData) => {
-    showBasicData.value = showData.showBasicInfo
-    showComments.value = showData.comments
+  getShowBasicInfo(route.params.id).then((res) => {
+    showBasicData.value = res
+  })
+
+  getShowComments(route.params.id).then((res) => {
+    showComments.value = res
   })
 })
 
@@ -368,7 +372,7 @@ function renderSeatCanvas(hallLayoutData) {
       <div class="commentText">{{ comment.content }}</div>
       <div class="commentStar">
         <RatingStars :rating="parseFloat(comment.rating)" size="10.5" />
-        <div class="commentDate">{{ comment.data }}</div>
+        <div class="commentDate">{{ comment.date }}</div>
       </div>
     </div>
 
@@ -467,6 +471,8 @@ function renderSeatCanvas(hallLayoutData) {
   height: 100%;
   position: fixed;
   z-index: 3;
+  top: 0;
+  left: 0;
 }
 
 .singleCommentContainer {

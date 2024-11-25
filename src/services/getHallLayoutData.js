@@ -3,7 +3,7 @@ import axiosInstance from './axios.js'
 async function getHallLayoutData(showId) {
 	return new Promise((resolve, reject) => {
 		axiosInstance
-			.get(`/show/seat/${showId}`)
+			.get(`/show/layout/${showId}`)
 			.then((res) => {
 				resolve(res.data)
 			})
