@@ -30,11 +30,11 @@ const props = defineProps({
 
 const emit = defineEmits(["update:rating"]);
 
-const { totalStars, mode, size } = props;
-const rating = toRef(props, "rating");
+const { totalStars, mode, size, rating } = props;
+const localRating = ref(rating)
 
 const getStarImgUrl = (i) => {
-  const ratingValue = rating.value;
+  const ratingValue = localRating.value;
   let url = ''
   if (ratingValue >= i) {
     url = "../assets/stars/star-active.svg";
@@ -54,8 +54,8 @@ const updateRating = (event) => {
   const offsetX = touch.clientX - rect.left;
   const starWidth = rect.width / totalStars;
   const ratingValue = Math.min(Math.ceil((offsetX / starWidth) * 2) / 2, totalStars);
-  rating.value = ratingValue;
-  console.log('ratingValue:', ratingValue)
+  localRating.value = ratingValue;
+  // console.log('ratingValue:', ratingValue)
   emit("update:rating", ratingValue);
 };
 </script>

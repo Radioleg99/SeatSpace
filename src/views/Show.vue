@@ -151,8 +151,8 @@ function renderSeatCanvas(hallLayoutData) {
 
   function createSeat(seatData) {
     // magic number, stand for seat width and height
-    const seatWidth = 33
-    const seatHeight = 33
+    const seatWidth = 50
+    const seatHeight = 50
 
     // seat properties
     const seatId = seatData[0]
@@ -260,7 +260,7 @@ function renderSeatCanvas(hallLayoutData) {
       const newScale = oldScale * scale;
 
       // set the new scale limit
-      if (newScale < 0.5 || newScale > 3) return;
+      if (newScale < 0.2 || newScale > 3) return;
 
       stage.scale({ x: newScale, y: newScale });
 
