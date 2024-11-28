@@ -15,5 +15,8 @@ function goBack() {
 .btn {
   cursor: pointer;
   border-radius: 50px;
+  z-index: 4;
+  width: 35px;
+  height: 35px;
 }
 </style>

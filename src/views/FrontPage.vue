@@ -124,6 +124,7 @@ onMounted(async () => {
 				</div>
 			</div>
 		</div>
+
 		<!-- <div class="multitheater-container">
 				<singletheaterCard v-for="theater in theaterList" :key="theater.id" :image="theater.imgUrl" :name="theater.name" :description="theater.description" @click="goToTheaterDetail(theater.id)" />
 			</div> -->
@@ -216,18 +217,22 @@ onMounted(async () => {
 	background: linear-gradient(180deg, #e2f2a2, #e2f2a7 0.01%, #e9ebea 59%);
 	z-index: 10;
 }
+
 .title {
-	margin: 0; /* 移除外边距，防止垂直方向的偏移 */
+	margin: 0;
+	/* 移除外边距，防止垂直方向的偏移 */
 	font-size: 24px;
 	line-height: 1.5;
 	font-family: 'Roboto Slab', serif;
 	color: #480b91;
 }
+
 .search-Button {
 	background: none;
 	border: none;
 	cursor: pointer;
 }
+
 .search-Icon {
 	width: 36px;
 	height: 36px;
@@ -245,6 +250,7 @@ onMounted(async () => {
 	flex-direction: column;
 	align-items: center;
 }
+
 .decoration-theatertop {
 	margin-top: 40px;
 	width: 54px;
@@ -254,6 +260,7 @@ onMounted(async () => {
 	margin-right: auto;
 	/* 水平居中 */
 }
+
 .theater-title {
 	font-size: 24px;
 	font-family: 'Roboto Slab', serif;
@@ -272,8 +279,10 @@ onMounted(async () => {
 	margin-top: 10px;
 	margin-bottom: 50px;
 }
+
 .multitheater-container::-webkit-scrollbar {
-	display: none; /* Safari and Chrome */
+	display: none;
+	/* Safari and Chrome */
 }
 
 /* decoration-theater */
@@ -303,6 +312,7 @@ onMounted(async () => {
 	/* 可选：增加轻微阴影 */
 	margin-left: 16px;
 }
+
 .theater-img {
 	width: 100%;
 	height: 142px;
@@ -311,12 +321,14 @@ onMounted(async () => {
 	border-top-right-radius: 10px;
 	object-fit: cover;
 }
+
 .theater-card {
 	width: 100%;
 	height: 96px;
 	padding: 10px 16.5px;
 	justify-content: flex-start;
 }
+
 .theater-info {
 	display: flex;
 	flex-direction: row;
@@ -324,6 +336,7 @@ onMounted(async () => {
 	margin-bottom: 10px;
 	align-content: center;
 }
+
 .color-icon {
 	border-radius: 50%;
 	background-color: #9747ff;
@@ -331,6 +344,7 @@ onMounted(async () => {
 	width: 22px;
 	margin-left: 10px;
 }
+
 .theater-name {
 	display: flex;
 	align-items: center;
@@ -341,6 +355,7 @@ onMounted(async () => {
 	text-underline-position: from-font;
 	text-decoration-skip-ink: none;
 }
+
 .theater-description {
 	display: flex;
 	margin-left: 10px;
@@ -406,21 +421,25 @@ onMounted(async () => {
 	margin-bottom: 5px;
 	border-radius: 10px;
 }
+
 .show-name {
 	text-align: center;
 	font-size: 13px;
 	line-height: 14px;
 	font-family: Helvetica;
 }
+
 .show-info {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 }
+
 .location-icon {
 	width: 8px;
 	height: 8px;
 }
+
 .show-theater-name {
 	display: flex;
 	align-items: center;
