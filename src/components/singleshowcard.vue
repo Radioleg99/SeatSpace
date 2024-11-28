@@ -13,7 +13,7 @@
 					<div class="time">{{ time }}</div>
 				</div>
 				<div class="rankContent">
-					{{ rating }}
+					<RatingStars :rating="rating" size="10" />
 				</div>
 			</div>
 		</div>
@@ -21,6 +21,8 @@
 </template>
 
 <script setup>
+import RatingStars from './RatingStars.vue'
+
 const props = defineProps({
 	image: {
 		type: String,
