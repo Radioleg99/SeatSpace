@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, toRef } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   totalStars: {

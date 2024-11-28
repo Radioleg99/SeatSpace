@@ -10,7 +10,6 @@ const latitude = ref(0)
 const route = useRoute()
 const router = useRouter()
 const theaterList = ref([])
-const router = useRouter()
 const showList = ref([])
 
 // const getLocation = async () => {
@@ -112,7 +111,8 @@ onMounted(async () => {
 				<div class="theater-title">Theater</div>
 			</div>
 			<div class="multitheater-container">
-				<div v-for="theater in theaterList" :key="theater.id" class="theater-item" @click="goToTheaterDetail(theater.id)">
+				<div v-for="theater in theaterList" :key="theater.id" class="theater-item"
+					@click="goToTheaterDetail(theater.id)">
 					<img :src="theater.imgUrl" alt="theater image" class="theater-img" />
 					<div class="theater-card">
 						<div class="theater-info">
@@ -177,13 +177,16 @@ onMounted(async () => {
 /* headlayout */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700&display=swap');
+
 .frontpage-layout {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-	overflow-x: hidden; /* 禁止页面滚动 */
+	overflow-x: hidden;
+	/* 禁止页面滚动 */
 	overflow-y: scroll;
 }
+
 .fpbackground-color {
 	position: absolute;
 	top: 0;
@@ -208,8 +211,10 @@ onMounted(async () => {
 	margin-top: 5px;
 	display: flex;
 	justify-content: space-between;
-	align-items: flex-start; /* 子元素顶部对齐 */
-	padding-top: 43px; /* 调整这个值以控制向下偏移的程度 */
+	align-items: flex-start;
+	/* 子元素顶部对齐 */
+	padding-top: 43px;
+	/* 调整这个值以控制向下偏移的程度 */
 	padding-bottom: 15px;
 	padding-left: 20px;
 	padding-right: 20px;
@@ -275,7 +280,8 @@ onMounted(async () => {
 	flex-direction: row;
 	gap: 21px;
 	width: 100%;
-	scrollbar-width: none; /* Firefox */
+	scrollbar-width: none;
+	/* Firefox */
 	margin-top: 10px;
 	margin-bottom: 50px;
 }
@@ -400,10 +406,13 @@ onMounted(async () => {
 	overflow-x: auto;
 	flex-direction: row;
 	width: 100%;
-	scrollbar-width: none; /* Firefox */
+	scrollbar-width: none;
+	/* Firefox */
 }
+
 .show-container::-webkit-scrollbar {
-	display: none; /* Safari and Chrome */
+	display: none;
+	/* Safari and Chrome */
 }
 
 .show-item {
@@ -415,6 +424,7 @@ onMounted(async () => {
 	width: 95px;
 	height: 173px;
 }
+
 .show-img {
 	width: 100%;
 	height: 139px;
@@ -448,6 +458,7 @@ onMounted(async () => {
 	font-family: Helvetica;
 	color: #505e2c;
 }
+
 .decoration {
 	width: 54px;
 	height: 54px;
