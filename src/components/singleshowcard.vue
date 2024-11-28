@@ -1,17 +1,15 @@
 <template>
 	<div class="singlecardtoShow" @click="$emit('click')">
-		<div class="imgBox">
-			<img class="img" :src="image" alt="Theater Image" />
-		</div>
+		<img class="img-box" :src="image" alt="Theater Image" />
 		<div class="rightBox">
 			<div class="title">{{ name }}</div>
 			<div class="contentBox">
 				<div class="locationContent">
-					<img class="locationIcon" src="./assets/icon/location.svg" alt="location" />
+					<img class="locationIcon" src="../assets/icon/search-location.svg" alt="location" />
 					<div class="location">{{ hall }}</div>
 				</div>
 				<div class="timeContent">
-					<img class="timeIcon" src="./assets/icon/time.svg" alt="time" />
+					<img class="timeIcon" src="../assets/icon/clock.svg" alt="time" />
 					<div class="time">{{ time }}</div>
 				</div>
 				<div class="rankContent">
@@ -64,25 +62,20 @@ const props = defineProps({
 	border-radius: 20px;
 	width: 360px;
 	height: 200px;
-	background-color: rgba(255, 255, 255, 0.8);
+	background: #e9ebea;
 	/* 白色背景带透明度 */
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	/* 边框为淡灰色 */
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 	/* 可选：增加轻微阴影 */
-	padding: 11px;
 }
 
-.imgBox {
+.img-box {
 	display: flex;
+	margin-left: 12px;
 	width: 134px;
 	height: 175px;
 	border-radius: 7px;
-}
-
-.img {
-	width: 100%;
-	height: 100%;
 	object-fit: cover;
 }
 
