@@ -62,7 +62,7 @@ function closeCommentPop() {
 }
 
 function jumpToCommentPage() {
-  router.push('/comment/' + currentChosedSeatId.value)
+  router.push(`/comment/${route.params.id}/${currentChosedSeatId.value}`)
 }
 
 // canvas render function
