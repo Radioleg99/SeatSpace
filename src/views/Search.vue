@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axiosInstance from '../services/axios'
-// import singletheaterCard from '../components/singletheaterCard.vue'
+import singletheaterCard from '../components/singletheaterCard.vue'
 import singleshowCard from '../components/singleshowcard.vue'
 
 const router = useRouter()
@@ -50,7 +50,7 @@ const performSearch = async () => {
 		})
 		// 切分数据的方式取决于服务器返回的数据结构
 		resultList.value = response.data
-		console.log('Search results:', { reslutList: resultList.value })
+		console.log('Search results:', response.data)
 
 		// Check if both lists are empty
 		showNoResult.value = resultList.value.length === 0 && resultList.value.length === 0
@@ -87,7 +87,8 @@ onMounted(() => {
 	<div class="searchpage-layout">
 		<div class="searchbackground-color"></div>
 		<img class="search-decoration" src="../assets/decoration/search-decoration.svg" alt="search-decoration" />
-		<img class="search-bottom-decoration" src="../assets/decoration/search-bottom-decoration.svg" alt="search-bottom-decoration" />
+		<img class="search-bottom-decoration" src="../assets/decoration/search-bottom-decoration.svg"
+			alt="search-bottom-decoration" />
 		<!-- 顶部布局 -->
 		<div class="search-toplayout">
 			<!-- 返回按钮 -->
@@ -110,17 +111,12 @@ onMounted(() => {
 			<div v-else class="search-results">
 				<div v-for="(result, index) in resultList" :key="result.data.theaterId || result.data.showId || index">
 					<div v-if="result.itemType === 'theater'">
-						<singletheaterCard :image="result.data.imgUrl" :name="result.data.name" :description="result.data.description" @click="goToTheaterDetail(result.data.theaterId)" />
+						<singletheaterCard :image="result.data.imgUrl" :name="result.data.name"
+							:description="result.data.description" @click="goToTheaterDetail(result.data.theaterId)" />
 					</div>
 					<div v-else-if="result.itemType === 'show'">
-						<singleshowCard
-							:image="result.data.imgUrl"
-							:name="result.data.showName"
-							:time="result.data.startTime"
-							:hall="result.data.hall"
-							:rating="result.data.rating"
-							@click="goToShowDetail(result.data.showId)"
-						/>
+						<singleshowCard :image="result.data.imgUrl" :name="result.data.showName" :time="result.data.startTime"
+							:hall="result.data.hall" :rating="result.data.rating" @click="goToShowDetail(result.data.showId)" />
 					</div>
 				</div>
 			</div>
@@ -146,6 +142,7 @@ onMounted(() => {
 	background: linear-gradient(355.93deg, #e2f2a2 -64.4%, #b5c670 24.26%, #8ea045 101.31%);
 	z-index: -2;
 }
+
 .search-decoration {
 	position: absolute;
 	top: 266px;
@@ -165,11 +162,16 @@ onMounted(() => {
 	z-index: 10;
 	padding: 0 20px;
 }
+
 .search-bottom-decoration {
-	position: fixed; /* 固定位置，始终在视口内 */
-	bottom: 0; /* 紧贴页面底部 */
-	right: 0; /* 紧贴页面右侧 */
-	z-index: 10; /* 确保在其他元素之上 */
+	position: fixed;
+	/* 固定位置，始终在视口内 */
+	bottom: 0;
+	/* 紧贴页面底部 */
+	right: 0;
+	/* 紧贴页面右侧 */
+	z-index: -1;
+	/* 确保在其他元素之上 */
 }
 
 /* 返回按钮 */
@@ -179,16 +181,19 @@ onMounted(() => {
 	display: flex;
 	width: 35px;
 	height: 35px;
-	margin-right: 10px; /* 与搜索框的间距 */
+	margin-right: 10px;
+	/* 与搜索框的间距 */
 	align-items: center;
 	justify-content: center;
-	padding: 0; /* Remove any default padding */
+	padding: 0;
+	/* Remove any default padding */
 }
 
 .backIcon {
 	width: 100%;
 	height: 100%;
-	object-fit: cover; /* Ensure the icon fills the space */
+	object-fit: cover;
+	/* Ensure the icon fills the space */
 }
 
 /* 搜索框 */
@@ -201,10 +206,12 @@ onMounted(() => {
 	width: 292px;
 	height: 50px;
 	border-radius: 32px;
-	background-color: #e9ebea; /* 默认背景颜色 */
+	background-color: #e9ebea;
+	/* 默认背景颜色 */
 	border: 0.5px solid transparent;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	transition: background-color 0.3s, border-color 0.3s; /* 添加平滑过渡效果 */
+	transition: background-color 0.3s, border-color 0.3s;
+	/* 添加平滑过渡效果 */
 }
 
 /* 输入框样式 */
@@ -219,10 +226,14 @@ onMounted(() => {
 	font-family: 'InputFont', sans-serif;
 	font-size: 16px;
 	color: #333;
-	padding: 0 20px; /* 左右内边距 */
-	word-wrap: break-word; /* 长单词自动换行 */
-	word-break: break-word; /* 超过宽度强制换行 */
-	white-space: normal; /* 允许换行 */
+	padding: 0 20px;
+	/* 左右内边距 */
+	word-wrap: break-word;
+	/* 长单词自动换行 */
+	word-break: break-word;
+	/* 超过宽度强制换行 */
+	white-space: normal;
+	/* 允许换行 */
 }
 
 /* Placeholder 样式 */
@@ -264,11 +275,16 @@ onMounted(() => {
 	line-height: 14px;
 	font-family: Arial, Helvetica, sans-serif;
 	color: #e9ebea;
-	position: absolute; /* 使用绝对定位 */
-	top: 400px; /* 垂直方向居中 */
-	left: 50%; /* 水平方向居中 */
-	transform: translate(-50%, 0); /* 将元素的中心点与父容器中心点对齐 */
-	text-align: center; /* 文本居中对齐 */
+	position: absolute;
+	/* 使用绝对定位 */
+	top: 400px;
+	/* 垂直方向居中 */
+	left: 50%;
+	/* 水平方向居中 */
+	transform: translate(-50%, 0);
+	/* 将元素的中心点与父容器中心点对齐 */
+	text-align: center;
+	/* 文本居中对齐 */
 	font-family: Helvetica;
 }
 
@@ -278,11 +294,16 @@ onMounted(() => {
 	flex-wrap: nowrap;
 	overflow-y: auto;
 	flex-direction: column;
-	justify-content: flex-start; /* Align items to the top (default for column direction) */
-	align-items: center; /* Center items horizontally */
-	gap: 18px; /* Gap between items in the vertical direction */
-	margin-top: 25px; /* Space above the entire container */
-	scrollbar-width: none; /* Firefox */
+	justify-content: flex-start;
+	/* Align items to the top (default for column direction) */
+	align-items: center;
+	/* Center items horizontally */
+	gap: 18px;
+	/* Gap between items in the vertical direction */
+	margin-top: 25px;
+	/* Space above the entire container */
+	scrollbar-width: none;
+	/* Firefox */
 }
 
 /* 响应式设计 */
