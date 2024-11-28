@@ -1,285 +1,273 @@
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import singleshowcard from '../components/singleshowcard.vue'
+<script setup lang="js">
+import Konva from 'konva';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import seat_d from '../assets/seatPath.js';
+import getHallLayoutData from '../services/getHallLayoutData.js';
+import stagePath from '../assets/stagePath.js';
+import BackButton from '../components/BackButton.vue';
 
-const allShows = ref([
-	{
-		showId: 607,
-		showName: 'solutions Jamaica Guiana',
-		hall: 'A232',
-		startTime: '2024-10-10 10:00:00',
-		rating: 4,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 965,
-		showName: 'Soft Oklahoma scalable',
-		hall: 'A879',
-		startTime: '2024-10-10 10:00:00',
-		rating: 2.3,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 482,
-		showName: 'state Tools compress Metal',
-		hall: 'A485',
-		startTime: '2024-10-10 10:00:00',
-		rating: 5,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 627,
-		showName: 'Otaniemi',
-		hall: 'A032',
-		startTime: '2024-10-10 10:00:00',
-		rating: 2,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 965,
-		showName: 'Helsinki',
-		hall: '124',
-		startTime: '2024-10-10 10:00:00',
-		rating: 2.3,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 482,
-		showName: 'Espoo',
-		hall: '125',
-		startTime: '2024-10-10 10:00:00',
-		rating: 5,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 67,
-		showName: 'Vantaa',
-		hall: '126',
-		startTime: '2024-10-10 10:00:00',
-		rating: 2,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 635,
-		showName: 'China',
-		hall: '126',
-		startTime: '2024-10-10 10:00:00',
-		rating: 2.3,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-	{
-		showId: 891,
-		showName: 'Lijiang',
-		hall: '157',
-		startTime: '2024-10-10 10:00:00',
-		rating: 5,
-		imgUrl: 'https://espoonteatteri.fi/wp-content/uploads/2024/11/swafom.jpg',
-	},
-])
+const route = useRoute()
+let initOverflowSetting
+let showId
 
-const page = ref(1)
-const pageSize = ref(4) // Show 4 items per page
-const showList = ref([])
-const isLoading = ref(false)
-const hasMore = ref(true)
-const observerTarget = ref(null)
+// page flag, true for layout page, false for comments page
+let isLayoutPage = ref(true)
 
-// Load shows function
-const loadShows = () => {
-	if (isLoading.value || !hasMore.value) return
+onMounted(() => {
+  blockScroll()
 
-	isLoading.value = true
+  showId = route.params.id
+  console.log('Show ID:', showId)
 
-	setTimeout(() => {
-		const start = (page.value - 1) * pageSize.value
-		const end = page.value * pageSize.value
-		const newShows = allShows.value.slice(start, end)
+  renderSeatCanvas(getHallLayoutData(showId))
+})
 
-		if (newShows.length === 0) {
-			hasMore.value = false
-		} else {
-			showList.value = [...showList.value, ...newShows]
-			page.value += 1
-		}
+onBeforeUnmount(() => {
+  allowScroll()
+})
 
-		isLoading.value = false
-	}, 1000) // Simulate network delay
+// tab bar switch page
+function switchPage(e) {
+  console.log('switch page', e.target.id)
+  isLayoutPage.value = !isLayoutPage.value
+
+  console.log('isLayoutPage', isLayoutPage)
 }
 
-// Setup Intersection Observer
-onMounted(() => {
-	const observer = new IntersectionObserver(
-		(entries) => {
-			if (entries[0].isIntersecting) {
-				loadShows()
-			}
-		},
-		{
-			threshold: 0.5,
-			rootMargin: '100px',
-		}
-	)
+// Main render function
+function renderSeatCanvas(hallLayoutData) {
+  // create stage for all items
+  const stageData = {
+    container: 'seatCanvasContainer',
+    width: window.innerWidth,
+    height: window.innerHeight,
+    draggable: true
+  }
+  const stage = new Konva.Stage(stageData);
 
-	if (observerTarget.value) {
-		observer.observe(observerTarget.value)
-	}
+  // create layer for seats
+  const seatsLayerData = {
+    x: 0,
+    y: 100,
+    offsetX: -window.innerWidth / 2,
+  }
+  const seatsLayer = new Konva.Layer(seatsLayerData);
 
-	// Initial load
-	loadShows()
+  // create stage shape
+  const stageShape = createStageShape()
 
-	// Cleanup
-	onUnmounted(() => {
-		observer.disconnect()
-	})
-})
+  // create seats layout
+  const seatGroup = new Konva.Group({
+    x: 0,
+    y: 100,
+  });
+
+  hallLayoutData.forEach((zone, index) => {
+    const zoneGroup = createZone(zone)
+    zone.seats.forEach((seatData) => {
+      const seat = createSeat(seatData)
+      zoneGroup.add(seat)
+    })
+    seatGroup.add(zoneGroup)
+  })
+
+  seatsLayer.add(seatGroup)
+  seatsLayer.add(stageShape)
+  stage.add(seatsLayer);
+}
+
+function createStageShape() {
+  // crate stage background
+  const stage = new Konva.Path({
+    x: 0,
+    y: 0,
+    data: stagePath,
+    // fill: 'red',
+    fillLinearGradientStartPoint: { x: 0, y: 0 },
+    fillLinearGradientEndPoint: { x: 0, y: 71 },
+    fillLinearGradientColorStops: [0, 'rgba(47, 47, 66, 1)', 1, 'rgba(26, 26, 36 ,0.2)'],
+  });
+  const stageWidth = stage.getClientRect().width
+  const stageHeight = stage.getClientRect().height
+
+  // create stage text
+  const stageText = new Konva.Text({
+    x: 140,
+    y: 20,
+    text: 'stage',
+    fontSize: 20,
+    fill: '#6E6E6E',
+  });
+  const stageTextWidth = stageText.width()
+  const stageTextHeight = stageText.height()
+
+  // set stage text to center
+  stageText.x(stageWidth / 2 - stageTextWidth / 2);
+  stageText.y(stageHeight / 2 - stageTextHeight / 2);
+
+  // create stage group
+  const stageGroup = new Konva.Group({
+    x: -stageWidth / 2, // center stage
+    y: 0
+  });
+
+  stageGroup.add(stage);
+  stageGroup.add(stageText);
+
+  return stageGroup;
+}
+
+function createSeat(seatData) {
+  // magic number, stand for seat width and height
+  const seatWidth = 33
+  const seatHeight = 33
+
+  // seat properties
+  const seatId = seatData[0]
+  const seatColor = calculateSeatColor(seatData[1])
+  const seatRow = seatData[2]
+  const seatCol = seatData[3]
+
+  const seatGroup = new Konva.Group({
+    x: (seatCol - 1) * seatHeight,
+    y: (seatRow - 1) * seatWidth,
+    seatId: seatId,
+  });
+
+  // create seat
+  const seat = new Konva.Path({
+    x: 0,
+    y: 0,
+    data: seat_d, // seat icon svg path data
+    fill: seatColor,
+  });
+
+  // create seat number text
+  const seatNumber = new Konva.Text({
+    x: 0,
+    y: seatHeight - 13,
+    text: seatCol,
+    fontSize: 10,
+    fill: 'balck',
+  });
+  seatNumber.x(seatWidth / 2 - seatNumber.width() / 2)
+
+  // add seat and seat number to group
+  seatGroup.add(seat)
+  seatGroup.add(seatNumber)
+
+  // add click event to seat
+  seatGroup.on('click tap', function (e) {
+    console.log('clicked on seat', e.target);
+    alert(`Seat ID: ${e.currentTarget.attrs.seatId}`)
+  });
+
+  return seatGroup;
+}
+
+function calculateSeatColor(rating) {
+  if (rating < 0) {
+    return 'grey'
+  }
+  else if (rating >= 0 && rating < 1) {
+    return 'red'
+  } else if (rating >= 1 && rating < 3) {
+    return 'yellow'
+  } else if (rating >= 3 && rating <= 5) {
+    return 'green'
+  } else {
+    return 'grey'
+  }
+}
+
+function createZone(zoneData) {
+  const group = new Konva.Group({
+    x: zoneData.zoneOffsetX,
+    y: zoneData.zoneOffsetY,
+    rotation: zoneData.rotation,
+    zoneId: zoneData.zoneId,
+  });
+
+  return group;
+}
+
+function blockScroll() {
+  initOverflowSetting = window.document.body.style.overflow
+  document.body.style.overflow = 'hidden';
+}
+
+function allowScroll() {
+  document.body.style.overflow = initOverflowSetting;
+}
 </script>
 
 <template>
-	<div class="theater-info-page">
-		<div class="background-color"></div>
+  <!-- Control bar -->
+  <BackButton class="backBtn" />
+  <div class="tabBar" @click="switchPage" id="tabBar">
+    <div class="tabBarStatusBar" id="tabStatusBar" :style="{ left: isLayoutPage ? 0 : '129px' }">
+    </div>
+    <div class="tabBarSeatText" id="tabSeat" :style="{ color: isLayoutPage ? 'white' : '#6E6E6E' }">SEAT</div>
+    <div class="tabBarShowText" id="tabShow" :style="{ color: isLayoutPage ? '#6E6E6E' : 'white' }">SHOW</div>
+  </div>
 
-		<!-- Top layout -->
-		<div class="top-layout">
-			<img class="new-photo-background" src="../assets/data/Image.png" alt="Theater Image" />
-			<div class="gradient-overlay"></div>
-			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg" alt="Theater Info Decoration" />
-			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg" alt="Theater Info Decoration" />
-			<div class="theater-info-detail">
-				<div class="theater-name">NIHAO</div>
-				<div class="theater-address">Beijing</div>
-			</div>
-		</div>
-
-		<div class="decoration-theater"></div>
-
-		<!-- Show list with infinite scroll -->
-		<div class="show-list-layout">
-			<singleshowcard
-				v-for="show in showList"
-				:key="show.showId"
-				:image="show.imgUrl"
-				:name="show.showName"
-				:hall="show.hall"
-				:time="show.startTime"
-				:rating="show.rating"
-				@click="goToShowDetail(show.showId)"
-			/>
-
-			<!-- Observer target and loading states -->
-			<div ref="observerTarget" class="observer-target">
-				<div v-if="isLoading" class="loading">Loading...</div>
-				<div v-if="!hasMore && !isLoading" class="no-more">No more shows</div>
-			</div>
-		</div>
-	</div>
+  <!-- Seat Layout -->
+  <div v-show="isLayoutPage" id="seatCanvasContainer" class="bg"></div>
+  <!-- Show Detail -->
+  <div v-show="!isLayoutPage">comment</div>
 </template>
 
 <style scoped>
-.theater-info-page {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	min-height: 100vh;
-	overflow-x: hidden;
+.bg {
+  background-color: #1A1A24;
+  z-index: 1;
 }
 
-.background-color {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: #8ea045;
-	z-index: -4;
+.backBtn {
+  position: fixed;
+  top: 57px;
+  left: 39px;
+  z-index: 2;
 }
 
-.top-layout {
-	position: relative;
-	width: 100%;
-	height: 200px;
-	border: 1px solid #000000;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+.tabBar {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 255px;
+  height: 35px;
+  background-color: #E9EBEA;
+  z-index: 2;
+  border-radius: 50px;
 }
 
-.new-photo-background {
-	width: 100%;
-	height: 100%;
-	opacity: 68%;
-	z-index: 1;
-	object-fit: cover;
+.tabBarSeatText {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 48px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.gradient-overlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(91, 102, 44, 0.64) 64%, #8ea045 100%);
-	z-index: 2;
+.tabBarShowText {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 48px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.theater-info-decoration {
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 3;
-}
-
-.theaterinfo-top-decoration {
-	position: absolute;
-	top: 150px;
-	right: -31px;
-	z-index: 3;
-}
-
-.theater-info-detail {
-	position: absolute;
-	bottom: 40px;
-	left: 50%;
-	transform: translateX(-50%);
-	z-index: 3;
-	text-align: center;
-	color: #ffffff;
-}
-
-.theater-name {
-	font-family: Helvetica;
-	font-size: 32px;
-	font-weight: 700;
-	line-height: 1.2;
-}
-
-.theater-address {
-	font-family: Helvetica;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 1.2;
-}
-
-.show-list-layout {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 22px;
-	padding: 20px;
-	margin-top: 10px;
-	z-index: 4;
-}
-
-.observer-target {
-	width: 100%;
-	height: 60px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.loading,
-.no-more {
-	color: white;
-	font-size: 16px;
-	padding: 10px;
-	text-align: center;
+.tabBarStatusBar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 132px;
+  height: 36px;
+  background-color: #6F00FF;
+  border-radius: 50px;
+  transition: all 0.3s;
 }
 </style>
