@@ -4,8 +4,6 @@ import { ref, onMounted } from 'vue'
 import axiosInstance from '../services/axios'
 import { useRoute, useRouter } from 'vue-router'
 
-import singletheaterCard from '../components/singletheaterCard.vue'
-
 // this is for using push to navigate
 const longitude = ref(0)
 const latitude = ref(0)
@@ -13,31 +11,45 @@ const route = useRoute()
 const router = useRouter()
 const theaterList = ref([])
 const router = useRouter()
-const performanceList = ref([])
+const showList = ref([])
 
+// const getLocation = async () => {
+// 	return new Promise((resolve, reject) => {
+// 		if (navigator.geolocation) {
+// 			navigator.geolocation.getCurrentPosition(
+// 				(position) => {
+// 					console.log('Latitude:', position.coords.latitude)
+// 					console.log('Longitude:', position.coords.longitude)
+// 					longitude.value = position.coords.longitude
+// 					latitude.value = position.coords.latitude
+// 					resolve()
+// 				},
+// 				(error) => {
+// 					console.error('Error getting location:', error)
+// 					reject(error)
+// 				}
+// 			)
+// 		} else {
+// 			console.error('Geolocation is not supported by this browser.')
+// 			reject(new Error('Geolocation is not supported by this browser.'))
+// 		}
+// 	})
+// }
 const getLocation = async () => {
-	return new Promise((resolve, reject) => {
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(
-				(position) => {
-					console.log('Latitude:', position.coords.latitude)
-					console.log('Longitude:', position.coords.longitude)
-					longitude.value = position.coords.longitude
-					latitude.value = position.coords.latitude
-					resolve()
-				},
-				(error) => {
-					console.error('Error getting location:', error)
-					reject(error)
-				}
-			)
+	try {
+		const response = await fetch('https://ipinfo.io/json?token=5664e0eedfcb9a')
+		const data = await response.json()
+		if (data && data.loc) {
+			const [latitude, longitude] = data.loc.split(',')
+			console.log('IP Based Location:', latitude, longitude)
 		} else {
-			console.error('Geolocation is not supported by this browser.')
-			reject(new Error('Geolocation is not supported by this browser.'))
+			console.error('No location data received from the server.')
 		}
-	})
+	} catch (error) {
+		console.error('Error fetching location:', error)
+		return null
+	}
 }
-
 const getTheaterList = async () => {
 	try {
 		await getLocation()
@@ -53,88 +65,153 @@ const getTheaterList = async () => {
 		console.error('Error fetching theater list:', error)
 	}
 }
-
+const getShowList = async () => {
+	try {
+		await getTheaterList()
+		const response = await axiosInstance.get('/show/recent', {
+			params: {
+				page: 1,
+			},
+		})
+		showList.value = response.data
+		console.log('showList:', showList.value)
+	} catch (error) {
+		console.error('Error fetching show list:', error)
+	}
+}
 const handleSearchClick = () => {
 	router.push('/search')
 }
-
 const goToTheaterDetail = (theaterId) => {
 	router.push('/theater/' + theaterId) // Pass the theater ID
 }
 
+const goToShowDetail = (showId) => {
+	router.push('/show/' + showId) // Pass the show ID
+}
 onMounted(async () => {
 	console.log('Page mounted, fetching data...')
 	await getTheaterList() // 自动获取数据
+	await getShowList()
 })
 </script>
 
 <template>
 	<div class="frontpage-layout">
+		<div class="fpbackground-color"></div>
+		<!-- <img class="fpbackground-img" src="../assets/background/frontpage.svg" alt="background" /> -->
 		<div class="head-Layout">
 			<div class="title">SeatSpace</div>
 			<button class="search-Button" @click="handleSearchClick">
-				<img class="search-Icon" src="../../assets/icon/search.svg" alt="search" />
+				<img class="search-Icon" src="../assets/icon/search.svg" alt="search" />
 			</button>
 		</div>
 		<div class="theater-container">
 			<div class="theater-name-container">
-				<img class="decoration" src="../../assets/decor/Vector-PF.svg" alt="decoration" />
+				<img class="decoration-theatertop" src="../assets/decoration/theater-decoration.svg" alt="decoration" />
 				<div class="theater-title">Theater</div>
 			</div>
-			<!-- <div class="multitheater-container">
-			<div v-for="theater in theaterList" :key="theater.id" class="theater-item" @click="goToTheaterDetail(theater.id)">
-				<img :src="theater.image" alt="theater image" class="theater-img" />
-				<div class="theater-card">
-					<div class="theater-info">
-						<div class="color-icon"></div>
-						<div class="theater-name">{{ theater.name }}</div>
+			<div class="multitheater-container">
+				<div v-for="theater in theaterList" :key="theater.id" class="theater-item" @click="goToTheaterDetail(theater.id)">
+					<img :src="theater.imgUrl" alt="theater image" class="theater-img" />
+					<div class="theater-card">
+						<div class="theater-info">
+							<div class="color-icon"></div>
+							<div class="theater-name">{{ theater.name }}</div>
+						</div>
+						<div class="theater-description">{{ theater.description }}</div>
 					</div>
-					<div class="theater-description">{{ theater.description }}</div>
 				</div>
 			</div>
 		</div>
-	</div> -->
-			<div class="multitheater-container">
-				<!-- 使用 singletheaterCard 动态渲染剧院列表 -->
+		<!-- <div class="multitheater-container">
 				<singletheaterCard v-for="theater in theaterList" :key="theater.id" :image="theater.imgUrl" :name="theater.name" :description="theater.description" @click="goToTheaterDetail(theater.id)" />
-			</div>
-		</div>
+			</div> -->
+		<!-- <img class="decoration-showtop" src="../assets/decoration/showtop-decoration.svg" alt="decoration-theater" /> -->
+
 		<!-- 此处有问题需要改善 -->
-		<div class="performanceLayout">
-			<div class="performance-title">Performance</div>
-			<div class="performance-container">
-				<div class="multiperformance-container">
-					<div v-for="performance in performanceList" :key="performance.id" class="performance-item" @click="goToTheaterDetail(theater.id)">
-						<img :src="theater.image" alt="performance image" class="performance-img" />
-						<div class="performance-info">
-							<div class="performance-name">{{ performancename }}</div>
-							<div class="location-info">
-								<img class="location-icon" alt="" src="../../assets/icon/location_on.svg" />
-								<div class="location-name">{{ locationname }}</div>
+		<div class="showLayout">
+			<img class="decoration-showtop" src="../assets/decoration/showtop-decoration.svg" alt="decoration-theater" />
+			<div class="show-title">Performance</div>
+			<div class="multishow-container">
+				<div class="show-container">
+					<!-- <div v-for="show in showList" :key="show.id" class="show-item" @click="goToShowDetail(show.id)">
+					<img :src="show.imgUrl" alt="show image" class="show-img" />
+					<div class="show-name">{{ show.name }}</div>
+					<div class="show-info">
+						<img class="location-icon" alt="" src="../../assets/icon/location_on.svg" />
+						<div class="show-theater-name">{{ show.theater }}</div>
+					</div>
+				</div> -->
+					<div v-for="(show, index) in showList" :key="show.id">
+						<div v-show="index % 2 === 1" class="show-item" @click="goToShowDetail(show.id)">
+							<img :src="show.imgUrl" alt="show image" class="show-img" />
+							<div class="show-name">{{ show.name }}</div>
+							<div class="show-info">
+								<img class="location-icon" alt="" src="../assets/icon/location_on.svg" />
+								<div class="show-theater-name">{{ show.theater }}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="show-container">
+					<div v-for="(show, index) in showList" :key="show.id">
+						<div v-show="index % 2 === 0" class="show-item" @click="goToShowDetail(show.id)">
+							<img :src="show.imgUrl" alt="show image" class="show-img" />
+							<div class="show-name">{{ show.name }}</div>
+							<div class="show-info">
+								<img class="location-icon" alt="" src="../assets/icon/location_on.svg" />
+								<div class="show-theater-name">{{ show.theater }}</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+			<img class="decoration" src="../assets/decoration/showbotton-decoration.svg" alt="" />
 		</div>
-		<img class="decoration" src="../../assets/decor/Vector (Stroke).svg" alt="" />
 	</div>
 </template>
 
 <style scoped>
 /* headlayout */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700&display=swap');
 .frontpage-layout {
 	display: flex;
 	flex-direction: column;
-	height: 100vh; /* 占满视窗高度 */
-	overflow: hidden; /* 禁止页面滚动 */
+	height: 100vh;
+	overflow-x: hidden; /* 禁止页面滚动 */
+	overflow-y: scroll;
+}
+.fpbackground-color {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #8ea045;
+	z-index: -2;
+}
+
+.fpbackground-img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: -1;
 }
 
 .head-Layout {
+	margin-top: 5px;
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start; /* 子元素顶部对齐 */
-	padding-top: 20px; /* 调整这个值以控制向下偏移的程度 */
+	padding-top: 43px; /* 调整这个值以控制向下偏移的程度 */
+	padding-bottom: 15px;
+	padding-left: 20px;
+	padding-right: 20px;
 	box-shadow: 0px 16px 32px -4px rgba(12, 12, 13, 0.1), 0px 4px 4px -4px rgba(12, 12, 13, 0.05);
 	background: linear-gradient(180deg, #e2f2a2, #e2f2a7 0.01%, #e9ebea 59%);
 	z-index: 10;
@@ -143,7 +220,7 @@ onMounted(async () => {
 	margin: 0; /* 移除外边距，防止垂直方向的偏移 */
 	font-size: 24px;
 	line-height: 1.5;
-	font-family: jsMath-cmbx10;
+	font-family: 'Roboto Slab', serif;
 	color: #480b91;
 }
 .search-Button {
@@ -168,7 +245,7 @@ onMounted(async () => {
 	flex-direction: column;
 	align-items: center;
 }
-.decoration {
+.decoration-theatertop {
 	margin-top: 40px;
 	width: 54px;
 	height: 54px;
@@ -179,30 +256,46 @@ onMounted(async () => {
 }
 .theater-title {
 	font-size: 24px;
-	font-family: jsMath-cmbx10;
+	font-family: 'Roboto Slab', serif;
 	color: #012a34;
 	text-align: center;
 }
 
 .multitheater-container {
 	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
 	flex-direction: row;
 	gap: 21px;
-	width: 100vw;
-	overflow-x: auto;
+	width: 100%;
 	scrollbar-width: none; /* Firefox */
+	margin-top: 10px;
+	margin-bottom: 50px;
 }
 .multitheater-container::-webkit-scrollbar {
 	display: none; /* Safari and Chrome */
 }
+
+/* decoration-theater */
+.decoration-showtop {
+	margin-top: -10px;
+	width: 105px;
+	height: 38px;
+	margin-left: auto;
+	/* 水平居中 */
+	margin-right: auto;
+	/* 水平居中 */
+}
+
 .theater-item {
+	flex-shrink: 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	border-radius: 10px;
 	width: 325px;
 	height: 238px;
-	background-color: rgba(255, 255, 255, 0.8);
+	background: linear-gradient(360deg, #ffffff 0%, #e9ebea 100%);
 	/* 白色背景带透明度 */
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	/* 边框为淡灰色 */
@@ -211,21 +304,25 @@ onMounted(async () => {
 	margin-left: 16px;
 }
 .theater-img {
-	width: 325px;
+	width: 100%;
 	height: 142px;
 	margin-bottom: 11px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
+	object-fit: cover;
 }
 .theater-card {
-	display: flex;
-	flex-direction: column;
+	width: 100%;
+	height: 96px;
+	padding: 10px 16.5px;
+	justify-content: flex-start;
 }
 .theater-info {
 	display: flex;
 	flex-direction: row;
 	gap: 8.25px;
 	margin-bottom: 10px;
+	align-content: center;
 }
 .color-icon {
 	border-radius: 50%;
@@ -235,80 +332,110 @@ onMounted(async () => {
 	margin-left: 10px;
 }
 .theater-name {
-	font-size: 10px;
+	display: flex;
+	align-items: center;
 	font-family: Sora;
-	color: #2f2f42;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 12.6px;
+	text-underline-position: from-font;
+	text-decoration-skip-ink: none;
 }
 .theater-description {
+	display: flex;
 	margin-left: 10px;
 	font-size: 10px;
 	font-family: Sora;
 	color: #2f2f42;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-height: 45px;
 }
 
-/* performance-container */
-.performanceLayout {
+/* show-container */
+.showLayout {
 	display: flex;
 	flex-direction: column;
-	background-color: beige;
+	background: linear-gradient(180deg, #e9ebea 27.3%, #e7ecda 65.34%);
+	height: 1000px;
 }
 
-.performance-title {
+.show-title {
 	margin-top: 30px;
 	margin-bottom: 40px;
 	font-size: 24px;
 	line-height: 14px;
-	font-family: 'JSMath-cmbx10', sans-serif;
+	font-family: 'Roboto Slab', serif;
 	color: #380970;
 	text-align: center;
 }
 
-.MultiplecardLayout {
-	margin-bottom: 10px;
-}
+/* show-item */
 
-.decoration {
-	overflow: hidden;
-	width: 54px;
-	height: 54px;
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-}
-.performance-item {
+.multishow-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	flex: 1;
+	gap: 20px;
 }
-.performance-img {
+
+.show-container {
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	flex-direction: row;
+	width: 100%;
+	scrollbar-width: none; /* Firefox */
+}
+.show-container::-webkit-scrollbar {
+	display: none; /* Safari and Chrome */
+}
+
+.show-item {
+	margin-left: 26px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	width: 95px;
+	height: 173px;
+}
+.show-img {
+	width: 100%;
 	height: 139px;
 	margin-bottom: 5px;
 	border-radius: 10px;
 }
-.performance-info {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-.performance-name {
+.show-name {
 	text-align: center;
 	font-size: 13px;
 	line-height: 14px;
 	font-family: Helvetica;
 }
-.location-info {
+.show-info {
 	display: flex;
+	flex-direction: row;
+	align-items: center;
 }
 .location-icon {
 	width: 8px;
 	height: 8px;
 }
-.location-name {
+.show-theater-name {
+	display: flex;
+	align-items: center;
 	font-size: 8px;
 	line-height: 14px;
 	font-family: Helvetica;
 	color: #505e2c;
+}
+.decoration {
+	width: 54px;
+	height: 54px;
+	display: block;
+	margin-top: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 60px;
 }
 </style>
