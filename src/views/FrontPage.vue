@@ -1,51 +1,26 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axiosInstance from '../services/axios'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 // this is for using push to navigate
 const longitude = ref(0)
 const latitude = ref(0)
-const route = useRoute()
 const router = useRouter()
 const theaterList = ref([])
 const showList = ref([])
 
-// const getLocation = async () => {
-// 	return new Promise((resolve, reject) => {
-// 		if (navigator.geolocation) {
-// 			navigator.geolocation.getCurrentPosition(
-// 				(position) => {
-// 					console.log('Latitude:', position.coords.latitude)
-// 					console.log('Longitude:', position.coords.longitude)
-// 					longitude.value = position.coords.longitude
-// 					latitude.value = position.coords.latitude
-// 					resolve()
-// 				},
-// 				(error) => {
-// 					console.error('Error getting location:', error)
-// 					reject(error)
-// 				}
-// 			)
-// 		} else {
-// 			console.error('Geolocation is not supported by this browser.')
-// 			reject(new Error('Geolocation is not supported by this browser.'))
-// 		}
-// 	})
-// }
 const getLocation = async () => {
 	try {
 		const response = await fetch('https://ipinfo.io/json?token=5664e0eedfcb9a')
 		const data = await response.json()
 		if (data && data.loc) {
-			const [latitude, longitude] = data.loc.split(',')
-			console.log('IP Based Location:', latitude, longitude)
-		} else {
-			console.error('No location data received from the server.')
+			const [userLatitude, userLongitude] = data.loc.split(',')
+			latitude.value = userLatitude
+			longitude.value = userLongitude
 		}
 	} catch (error) {
 		console.error('Error fetching location:', error)
-		return null
 	}
 }
 const getTheaterList = async () => {
@@ -58,7 +33,6 @@ const getTheaterList = async () => {
 			},
 		})
 		theaterList.value = response.data
-		console.log('theaterList:', theaterList.value)
 	} catch (error) {
 		console.error('Error fetching theater list:', error)
 	}
@@ -72,7 +46,6 @@ const getShowList = async () => {
 			},
 		})
 		showList.value = response.data
-		console.log('showList:', showList.value)
 	} catch (error) {
 		console.error('Error fetching show list:', error)
 	}
@@ -88,7 +61,6 @@ const goToShowDetail = (showId) => {
 	router.push('/show/' + showId) // Pass the show ID
 }
 onMounted(async () => {
-	console.log('Page mounted, fetching data...')
 	await getTheaterList() // 自动获取数据
 	await getShowList()
 })
@@ -110,7 +82,8 @@ onMounted(async () => {
 				<div class="theater-title">Theater</div>
 			</div>
 			<div class="multitheater-container">
-				<div v-for="theater in theaterList" :key="theater.id" class="theater-item" @click="goToTheaterDetail(theater.id)">
+				<div v-for="theater in theaterList" :key="theater.id" class="theater-item"
+					@click="goToTheaterDetail(theater.id)">
 					<img :src="theater.imgUrl" alt="theater image" class="theater-img" />
 					<div class="theater-card">
 						<div class="theater-info">
@@ -276,6 +249,14 @@ onMounted(async () => {
 	margin-bottom: 50px;
 }
 
+.multitheater-container> :first-child {
+	margin-left: 16px;
+}
+
+.multitheater-container> :last-child {
+	margin-right: 16px;
+}
+
 .multitheater-container::-webkit-scrollbar {
 	display: none;
 	/* Safari and Chrome */
@@ -302,8 +283,6 @@ onMounted(async () => {
 	height: 238px;
 	background: linear-gradient(360deg, #ffffff 0%, #e9ebea 100%);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	/* 可选：增加轻微阴影 */
-	margin-left: 16px;
 }
 
 .theater-img {

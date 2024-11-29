@@ -38,7 +38,6 @@ const loadShowList = async () => {
 				page: page.value,
 			},
 		})
-		console.log('Loading page:', page.value)
 		const newShows = response.data || []
 		if (newShows.length > 0) {
 			showList.value = [...showList.value, ...newShows]
@@ -83,8 +82,10 @@ onMounted(() => {
 			<img class="new-photo-background" :src="theaterInfo.imgUrl" alt="Theater Image" />
 			<div class="gradient-overlay"></div>
 			<!-- 装饰图案 -->
-			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg" alt="Theater Info Decoration" />
-			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg" alt="Theater Info Decoration" />
+			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg"
+				alt="Theater Info Decoration" />
+			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg"
+				alt="Theater Info Decoration" />
 			<!-- 文本内容 -->
 			<div class="theater-info-detail">
 				<div class="theater-name">{{ theaterInfo.name }}</div>
@@ -94,16 +95,8 @@ onMounted(() => {
 
 		<div class="decoration-theater"></div>
 		<div class="show-list-layout" ref="containerRef" @scroll="handleScroll">
-			<singleshowcard
-				v-for="show in showList"
-				:key="show.showId"
-				:image="show.imgUrl"
-				:name="show.showName"
-				:hall="show.hall"
-				:time="show.startTime"
-				:rating="show.rating"
-				@click="goToShowDetail(show.showId)"
-			/>
+			<singleshowcard v-for="show in showList" :key="show.showId" :image="show.imgUrl" :name="show.showName"
+				:hall="show.hall" :time="show.startTime" :rating="show.rating" @click="goToShowDetail(show.showId)" />
 			<div v-if="isLoading && !isEnd" class="loading-indicator">
 				<img src="../assets/icon/refresh.svg" alt="Loading..." class="rotating-icon" />
 			</div>
@@ -182,12 +175,13 @@ onMounted(() => {
 
 .theater-info-detail {
 	position: absolute;
-	bottom: 40px;
+	top: 100px;
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 3;
 	text-align: center;
 	color: #ffffff;
+	width: 80vw;
 }
 
 .theater-name {
