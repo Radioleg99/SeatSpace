@@ -3,22 +3,30 @@ import axiosInstance from './axios'
 /**
  *
  * @param {File} images image file object
+ * @param {Function} progress callback function to update progress
  */
-function uploadSingleImage(images, progress) {
+function PostNewComment(images, showId, seatId, seatRating, showRating, content, progress = null) {
 	return new Promise((resolve, reject) => {
 		const formData = new FormData()
-		Object.keys(images).forEach((key) => {
-			formData.append('file', images[key])
+
+		images.forEach((image) => {
+			formData.append('images', image)
 		})
 
+		formData.append('showId', showId)
+		formData.append('seatId', seatId)
+		formData.append('seatRating', seatRating)
+		formData.append('showRating', showRating)
+		formData.append('content', content)
+
 		axiosInstance
-			.post('/image/new', formData, {
+			.post('/comment/new', formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 				},
 				onUploadProgress: (progressEvent) => {
+					if (!progress) return
 					const currentProgress = Math.round((progressEvent.loaded / progressEvent.total) * 100)
-					console.log('Upload Progress: ' + currentProgress + '%')
 					progress(currentProgress)
 				},
 			})
@@ -31,4 +39,4 @@ function uploadSingleImage(images, progress) {
 	})
 }
 
-export default uploadSingleImage
+export default PostNewComment
