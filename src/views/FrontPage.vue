@@ -1,5 +1,4 @@
 <script setup>
-
 import { ref, onMounted } from 'vue'
 import axiosInstance from '../services/axios'
 import { useRoute, useRouter } from 'vue-router'
@@ -111,8 +110,7 @@ onMounted(async () => {
 				<div class="theater-title">Theater</div>
 			</div>
 			<div class="multitheater-container">
-				<div v-for="theater in theaterList" :key="theater.id" class="theater-item"
-					@click="goToTheaterDetail(theater.id)">
+				<div v-for="theater in theaterList" :key="theater.id" class="theater-item" @click="goToTheaterDetail(theater.id)">
 					<img :src="theater.imgUrl" alt="theater image" class="theater-img" />
 					<div class="theater-card">
 						<div class="theater-info">
@@ -136,14 +134,6 @@ onMounted(async () => {
 			<div class="show-title">Performance</div>
 			<div class="multishow-container">
 				<div class="show-container">
-					<!-- <div v-for="show in showList" :key="show.id" class="show-item" @click="goToShowDetail(show.id)">
-					<img :src="show.imgUrl" alt="show image" class="show-img" />
-					<div class="show-name">{{ show.name }}</div>
-					<div class="show-info">
-						<img class="location-icon" alt="" src="../../assets/icon/location_on.svg" />
-						<div class="show-theater-name">{{ show.theater }}</div>
-					</div>
-				</div> -->
 					<div v-for="(show, index) in showList" :key="show.id">
 						<div v-show="index % 2 === 1" class="show-item" @click="goToShowDetail(show.id)">
 							<img :src="show.imgUrl" alt="show image" class="show-img" />
@@ -208,7 +198,6 @@ onMounted(async () => {
 }
 
 .head-Layout {
-	margin-top: 5px;
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -277,6 +266,7 @@ onMounted(async () => {
 	display: flex;
 	flex-wrap: nowrap;
 	overflow-x: auto;
+	overflow-y: hidden;
 	flex-direction: row;
 	gap: 21px;
 	width: 100%;
@@ -355,6 +345,7 @@ onMounted(async () => {
 	display: flex;
 	align-items: center;
 	font-family: Sora;
+	color: #2f2f42;
 	font-size: 10px;
 	font-weight: 700;
 	line-height: 12.6px;
@@ -437,6 +428,7 @@ onMounted(async () => {
 	font-size: 13px;
 	line-height: 14px;
 	font-family: Helvetica;
+	color: #444444;
 }
 
 .show-info {

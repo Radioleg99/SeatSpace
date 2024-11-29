@@ -64,7 +64,7 @@ const props = defineProps({
 	border-radius: 20px;
 	width: 360px;
 	height: 200px;
-	background: #e9ebea;
+	background: #fff;
 	/* 白色背景带透明度 */
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	/* 边框为淡灰色 */
@@ -110,6 +110,7 @@ const props = defineProps({
 .timeContent {
 	display: flex;
 	align-items: center;
+	color: black;
 }
 
 .locationIcon,
@@ -125,11 +126,12 @@ const props = defineProps({
 	font-size: 10px;
 	font-weight: 400;
 	line-height: 10px;
+	color: black;
 }
 
 .rankContent {
-	margin-top: 15px;
 	font-size: 18px;
 	color: #ff8800;
+	margin-bottom: 10px;
 }
 </style>
