@@ -20,7 +20,7 @@ const isLayoutPage = ref(true)
 // params for seat's comments
 const commentsList = ref([])
 const isCommentPop = ref(false)
-const currentChosedSeatId = ref(0)
+let currentChosedSeatId = 0
 
 // params for show page
 const showBasicData = ref({})
@@ -62,7 +62,7 @@ function closeCommentPop() {
 }
 
 function jumpToCommentPage() {
-  router.push(`/comment/${route.params.id}/${currentChosedSeatId.value}`)
+  router.push(`/comment/${route.params.id}/${currentChosedSeatId}`)
 }
 
 // canvas render function
@@ -190,10 +190,11 @@ function renderSeatCanvas(hallLayoutData) {
 
     // add click event to seat
     seatGroup.on('click tap', async (e) => {
-      console.log('clicked on seat', e.currentTarget.attrs.seatId);
+      const currentSeatId = e.currentTarget.attrs.seatId
+      console.log('clicked on seat', currentSeatId);
       isCommentPop.value = true
       commentsList.value = await getSeatComments(e.currentTarget.attrs.seatId)
-      currentChosedSeatId.value = e.currentTarget.attrs.seatId
+      currentChosedSeatId = currentSeatId
     });
 
     return seatGroup;

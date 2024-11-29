@@ -1,11 +1,11 @@
 <template>
-	<img src="../assets/backButton.svg" @click="goBack" class="btn" :style="{ top: `${top}px`, left: `${left}px`, position: 'absolute' }" />
+	<img src="../assets/backButton.svg" @click="goBack" class="btn"
+		:style="{ top: `${top}px`, left: `${left}px`, position: 'absolute' }" />
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
 const router = useRouter()
-import { defineProps } from 'vue'
 
 defineProps({
 	top: { type: Number, default: 40 }, // 默认顶部位置

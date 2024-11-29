@@ -83,8 +83,10 @@ onMounted(() => {
 			<img class="new-photo-background" :src="theaterInfo.imgUrl" alt="Theater Image" />
 			<div class="gradient-overlay"></div>
 			<!-- 装饰图案 -->
-			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg" alt="Theater Info Decoration" />
-			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg" alt="Theater Info Decoration" />
+			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg"
+				alt="Theater Info Decoration" />
+			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg"
+				alt="Theater Info Decoration" />
 			<!-- 文本内容 -->
 			<div class="theater-info-detail">
 				<div class="theater-name">{{ theaterInfo.name }}</div>
@@ -94,16 +96,8 @@ onMounted(() => {
 
 		<div class="decoration-theater"></div>
 		<div class="show-list-layout" ref="containerRef" @scroll="handleScroll">
-			<singleshowcard
-				v-for="show in showList"
-				:key="show.showId"
-				:image="show.imgUrl"
-				:name="show.showName"
-				:hall="show.hall"
-				:time="show.startTime"
-				:rating="show.rating"
-				@click="goToShowDetail(show.showId)"
-			/>
+			<singleshowcard v-for="show in showList" :key="show.showId" :image="show.imgUrl" :name="show.showName"
+				:hall="show.hall" :time="show.startTime" :rating="show.rating" @click="goToShowDetail(show.showId)" />
 			<div v-if="isLoading && !isEnd" class="loading-indicator">
 				<img src="../assets/icon/refresh.svg" alt="Loading..." class="rotating-icon" />
 			</div>
@@ -140,7 +134,6 @@ onMounted(() => {
 	width: 100%;
 	height: 200px;
 	/* 根据需要调整 */
-	border: 1px solid #000000;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -220,7 +213,8 @@ onMounted(() => {
 }
 
 .rotating-icon {
-	width: 20px; /* 根据需要调整图标大小 */
+	width: 20px;
+	/* 根据需要调整图标大小 */
 	height: 20px;
 	animation: rotate 1s linear infinite;
 }
@@ -236,6 +230,7 @@ onMounted(() => {
 	from {
 		transform: rotate(0deg);
 	}
+
 	to {
 		transform: rotate(360deg);
 	}
