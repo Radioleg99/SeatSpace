@@ -11,6 +11,7 @@ import getSeatComments from '../services/getSeatComments.js';
 import router from '../router/index.js';
 import getShowComments from '../services/getShowComments.js';
 import getShowBasicInfo from '../services/getShowBasicInfo.js';
+import Swal from 'sweetalert2';
 
 const route = useRoute()
 
@@ -28,7 +29,23 @@ const showComments = ref([])
 
 onMounted(async () => {
   console.log('Show ID:', route.params.id)
-  renderSeatCanvas(await getHallLayoutData(route.params.id))
+
+  Swal.fire({
+    title: 'Downloading Data...',
+    showConfirmButton: false,
+    allowOutsideClick: false,
+    willOpen: () => {
+      Swal.showLoading()
+    }
+  })
+
+  getHallLayoutData(route.params.id).then(seatLayoutData => {
+    renderSeatCanvas(seatLayoutData)
+    Swal.close()
+  }).catch(err => {
+    console.log(err)
+    Swal.close()
+  })
 
   getShowBasicInfo(route.params.id).then((res) => {
     showBasicData.value = res
@@ -177,7 +194,7 @@ function renderSeatCanvas(hallLayoutData) {
     // create seat number text
     const seatNumber = new Konva.Text({
       x: 0,
-      y: seatHeight - 13,
+      y: seatHeight - 20,
       text: seatCol,
       fontSize: 10,
       fill: 'balck',
@@ -193,7 +210,23 @@ function renderSeatCanvas(hallLayoutData) {
       const currentSeatId = e.currentTarget.attrs.seatId
       console.log('clicked on seat', currentSeatId);
       isCommentPop.value = true
-      commentsList.value = await getSeatComments(e.currentTarget.attrs.seatId)
+
+      Swal.fire({
+        title: 'Loading Data...',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        willOpen: () => {
+          Swal.showLoading()
+        }
+      })
+      getSeatComments(e.currentTarget.attrs.seatId).then(res => {
+        commentsList.value = res
+        Swal.close()
+      }).catch(err => {
+        console.log(err)
+        Swal.close()
+      })
+
       currentChosedSeatId = currentSeatId
     });
 
@@ -338,6 +371,11 @@ function renderSeatCanvas(hallLayoutData) {
         <div class="imgMask"></div>
         <img :src="comment.imgUrl" alt="star" class="commentImg" />
       </div>
+
+      <div v-if="commentsList.length === 0"
+        style="display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; color: aliceblue;">
+        No comment found! Please add one!
+      </div>
     </div>
   </div>
 
@@ -370,7 +408,7 @@ function renderSeatCanvas(hallLayoutData) {
       <div class="commentImgBox">
         <img v-for="img in comment.imgUrl" :src="img" alt="commentImg" class="commentImg" />
       </div>
-      <div class="commentText">{{ comment.content }}</div>
+      <div class="commentText">{{ comment.comment }}</div>
       <div class="commentStar">
         <RatingStars :rating="parseFloat(comment.rating)" size="10.5" />
         <div class="commentDate">{{ comment.date }}</div>
