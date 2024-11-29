@@ -1,12 +1,17 @@
 <script setup lang="js">
 import BackButton from "../components/BackButton.vue"
 import RatingStars from "../components/RatingStars.vue";
-import { ref, watch, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import PostNewComment from "../services/PostNewComment";
 import Swal from "sweetalert2";
 import draggable from "vuedraggable";
 
+// router
+const router = useRouter()
+const route = useRoute()
+
+// input element for uploading images
 const fileInput = ref(null)
 
 const seatRating = ref(0.0)
@@ -14,7 +19,6 @@ const showRating = ref(0.0)
 const displayImgList = ref([])
 const content = ref('')
 
-const route = useRoute()
 
 // trigger the input element to open file dialog
 const triggerUploadImg = () => {
@@ -131,6 +135,7 @@ const submitComment = async () => {
     await PostNewComment(images, showId, seatId, seatRating.value, showRating.value, content.value)
     // close loading
     Swal.close()
+    router.back()
 
   } catch (error) {
     console.log('post new comment error: ', error)
