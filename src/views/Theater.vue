@@ -2,28 +2,64 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axiosInstance from '../services/axios'
-import singleshowcard from '../components/SingleShowCard.vue'
+import singleshowcard from '../components/singleShowcard.vue'
+import backButton from '../components/backButton.vue'
 
 const route = useRoute()
 const router = useRouter()
 const theaterInfo = ref({})
 const showList = ref([])
+const page = ref(1)
+const isLoading = ref(false)
+const isEnd = ref(false)
+const containerRef = ref(null)
+const MIN_LOADING_TIME = 3000
 
-// Fetch theater details based on the route parameter (theater ID)
-const getTheaterList = async () => {
+const getTheaterInfo = async () => {
 	try {
-		const theaterId = route.params.id // Get the ID from the route
-		const getTheaterBasicInfoInstance = axiosInstance.get(`/theater/basic/${theaterId}`) // Fetch details for the specific theater
-		const getShowListInstance = axiosInstance.get(`/theater/shows/${theaterId}`)
-
-		const [theaterBasicRes, theaterShowsRes] = await Promise.all([getTheaterBasicInfoInstance, getShowListInstance])
-		theaterInfo.value = theaterBasicRes.data || []
-		showList.value = theaterShowsRes.data || []
-
-		console.log('Theater Info:', theaterBasicRes.data)
-		console.log('Show List:', theaterShowsRes.data)
+		const theaterId = route.params.id
+		const response = await axiosInstance.get(`/theater/basic/${theaterId}`)
+		theaterInfo.value = response.data || {}
 	} catch (error) {
-		console.error('Error fetching theater list:', error)
+		console.error('Error fetching theater info:', error)
+	}
+}
+
+const loadShowList = async () => {
+	if (isLoading.value || isEnd.value) return
+	isLoading.value = true
+	const theaterId = route.params.id
+	// 创建一个最小加载时间的 Promise
+	const minLoadingPromise = new Promise((resolve) => setTimeout(resolve, MIN_LOADING_TIME))
+	try {
+		// 发送网络请求获取演出列表
+		const response = await axiosInstance.get(`/theater/shows/${theaterId}`, {
+			params: {
+				page: page.value,
+			},
+		})
+		console.log('Loading page:', page.value)
+		const newShows = response.data || []
+		if (newShows.length > 0) {
+			showList.value = [...showList.value, ...newShows]
+			page.value++
+		} else {
+			isEnd.value = true
+		}
+	} catch (error) {
+		console.error('Error fetching show list:', error)
+	} finally {
+		// 等待最小加载时间的 Promise 完成
+		await minLoadingPromise
+		isLoading.value = false
+	}
+}
+
+const handleScroll = () => {
+	const container = containerRef.value
+	if (!container || isLoading.value || isEnd.value) return
+	if (container.scrollTop + container.clientHeight >= container.scrollHeight - 10) {
+		loadShowList()
 	}
 }
 
@@ -32,24 +68,23 @@ const goToShowDetail = (showId) => {
 }
 
 onMounted(() => {
-	getTheaterList()
+	getTheaterInfo()
+	loadShowList()
 })
 </script>
 
 <template>
 	<div class="theater-info-page">
 		<div class="background-color"></div>
-
 		<!-- 新的父容器 -->
 		<div class="top-layout">
 			<!-- 背景图片和渐变叠加层 -->
-			<img class="new-photo-background" src="../assets/data/Image.png" alt="Theater Image" />
+			<backButton />
+			<img class="new-photo-background" :src="theaterInfo.imgUrl" alt="Theater Image" />
 			<div class="gradient-overlay"></div>
 			<!-- 装饰图案 -->
-			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg"
-				alt="Theater Info Decoration" />
-			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg"
-				alt="Theater Info Decoration" />
+			<img class="theater-info-decoration" src="../assets/decoration/theater-detail-decoration.svg" alt="Theater Info Decoration" />
+			<img class="theaterinfo-top-decoration" src="../assets/decoration/theaterinfo-top-decoration.svg" alt="Theater Info Decoration" />
 			<!-- 文本内容 -->
 			<div class="theater-info-detail">
 				<div class="theater-name">{{ theaterInfo.name }}</div>
@@ -58,9 +93,21 @@ onMounted(() => {
 		</div>
 
 		<div class="decoration-theater"></div>
-		<div class="show-list-layout">
-			<singleshowcard v-for="show in showList" :key="show.showId" :image="show.imgUrl" :name="show.showName"
-				:hall="show.hall" :time="show.startTime" :rating="show.rating" @click="goToShowDetail(show.showId)" />
+		<div class="show-list-layout" ref="containerRef" @scroll="handleScroll">
+			<singleshowcard
+				v-for="show in showList"
+				:key="show.showId"
+				:image="show.imgUrl"
+				:name="show.showName"
+				:hall="show.hall"
+				:time="show.startTime"
+				:rating="show.rating"
+				@click="goToShowDetail(show.showId)"
+			/>
+			<div v-if="isLoading && !isEnd" class="loading-indicator">
+				<img src="../assets/icon/refresh.svg" alt="Loading..." class="rotating-icon" />
+			</div>
+			<div v-if="isEnd" class="end-indicator">No more results</div>
 		</div>
 	</div>
 </template>
@@ -88,6 +135,7 @@ onMounted(() => {
 
 .top-layout {
 	position: relative;
+	flex-shrink: 0;
 	/* 创建新的层叠上下文 */
 	width: 100%;
 	height: 200px;
@@ -97,6 +145,7 @@ onMounted(() => {
 }
 
 .new-photo-background {
+	position: absolute;
 	width: 100%;
 	height: 100%;
 	opacity: 68%;
@@ -156,11 +205,6 @@ onMounted(() => {
 	line-height: 1.2;
 }
 
-/* 根据需要调整其他元素的样式 */
-.decoration-theater {
-	/* ... */
-}
-
 .show-list-layout {
 	display: flex;
 	flex-wrap: nowrap;
@@ -172,5 +216,28 @@ onMounted(() => {
 	gap: 22px;
 	scrollbar-width: none;
 	z-index: 4;
+	margin-bottom: 20px;
+}
+
+.rotating-icon {
+	width: 20px; /* 根据需要调整图标大小 */
+	height: 20px;
+	animation: rotate 1s linear infinite;
+}
+
+.end-indicator {
+	margin-top: 2px;
+	color: white;
+	font-size: 20px;
+}
+</style>
+<style>
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 </style>

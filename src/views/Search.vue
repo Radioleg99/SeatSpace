@@ -1,15 +1,20 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axiosInstance from '../services/axios'
 import singletheaterCard from '../components/singletheaterCard.vue'
-import singleshowCard from '../components/singleshowcard.vue'
+import singleshowCard from '../components/singleShowcard.vue'
+import backButton from '../components/backButton.vue'
 
 const router = useRouter()
 const searchQuery = ref('') // Bound to the search input
 const resultList = ref([])
 const hasSearched = ref(false)
 const showNoResult = ref(false)
+const page = ref(1) // 当前页码
+const isLoading = ref(false) // 加载状态
+const isEnd = ref(false) // 是否到达末尾
+const containerRef = ref(null) // 引用滚动容器
 
 // Helper function to check network status
 const checkConnection = () => {
@@ -65,11 +70,6 @@ const performSearch = async () => {
 	}
 }
 
-// Handle back navigation
-const handleBackClick = () => {
-	console.log('Navigating back...')
-	router.back()
-}
 const goToTheaterDetail = (theaterId) => {
 	router.push({ name: 'theater', params: { id: theaterId } })
 }
@@ -87,22 +87,16 @@ onMounted(() => {
 	<div class="searchpage-layout">
 		<div class="searchbackground-color"></div>
 		<img class="search-decoration" src="../assets/decoration/search-decoration.svg" alt="search-decoration" />
-		<img class="search-bottom-decoration" src="../assets/decoration/search-bottom-decoration.svg"
-			alt="search-bottom-decoration" />
+		<img class="search-bottom-decoration" src="../assets/decoration/search-bottom-decoration.svg" alt="search-bottom-decoration" />
 		<!-- 顶部布局 -->
-		<div class="search-toplayout">
-			<!-- 返回按钮 -->
-			<button class="backButton" @click="handleBackClick">
-				<img class="backIcon" src="../assets/icon/back.svg" alt="back" />
+		<!-- 返回按钮 -->
+		<backButton></backButton>
+		<!-- 搜索框 -->
+		<div class="searchBox">
+			<input v-model.lazy="searchQuery" class="searchboxDescription" placeholder="theater name, show name, etc." @keyup.enter="performSearch" />
+			<button class="searchButton" @click="performSearch">
+				<img class="searchIcon" src="../assets/icon/search.svg" alt="search" />
 			</button>
-			<!-- 搜索框 -->
-			<div class="searchBox">
-				<input v-model.lazy="searchQuery" class="searchboxDescription" placeholder="theater name, show name, etc."
-					@keyup.enter="performSearch" />
-				<button class="searchButton" @click="performSearch">
-					<img class="searchIcon" src="../assets/icon/search.svg" alt="search" />
-				</button>
-			</div>
 		</div>
 
 		<!-- 搜索结果显示 -->
@@ -111,12 +105,17 @@ onMounted(() => {
 			<div v-else class="search-results">
 				<div v-for="(result, index) in resultList" :key="result.data.theaterId || result.data.showId || index">
 					<div v-if="result.itemType === 'theater'">
-						<singletheaterCard :image="result.data.imgUrl" :name="result.data.name"
-							:description="result.data.description" @click="goToTheaterDetail(result.data.theaterId)" />
+						<singletheaterCard :image="result.data.imgUrl" :name="result.data.name" :description="result.data.description" @click="goToTheaterDetail(result.data.theaterId)" />
 					</div>
 					<div v-else-if="result.itemType === 'show'">
-						<singleshowCard :image="result.data.imgUrl" :name="result.data.showName" :time="result.data.startTime"
-							:hall="result.data.hall" :rating="result.data.rating" @click="goToShowDetail(result.data.showId)" />
+						<singleshowCard
+							:image="result.data.imgUrl"
+							:name="result.data.showName"
+							:time="result.data.startTime"
+							:hall="result.data.hall"
+							:rating="result.data.rating"
+							@click="goToShowDetail(result.data.showId)"
+						/>
 					</div>
 				</div>
 			</div>
@@ -153,16 +152,6 @@ onMounted(() => {
 	z-index: -1;
 }
 
-/* 顶部布局 */
-.search-toplayout {
-	margin-top: 40px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	z-index: 10;
-	padding: 0 20px;
-}
-
 .search-bottom-decoration {
 	position: fixed;
 	/* 固定位置，始终在视口内 */
@@ -174,32 +163,9 @@ onMounted(() => {
 	/* 确保在其他元素之上 */
 }
 
-/* 返回按钮 */
-.backButton {
-	background: none;
-	border: none;
-	display: flex;
-	width: 35px;
-	height: 35px;
-	margin-right: 10px;
-	/* 与搜索框的间距 */
-	align-items: center;
-	justify-content: center;
-	padding: 0;
-	/* Remove any default padding */
-}
-
-.backIcon {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	/* Ensure the icon fills the space */
-}
-
-/* 搜索框 */
-
-/* 默认的搜索框容器样式 */
 .searchBox {
+	margin-top: 33px;
+	margin-left: 75px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -268,6 +234,13 @@ onMounted(() => {
 	height: 24px;
 }
 
+.search-results-container {
+	flex: 1;
+	overflow-y: auto;
+	position: relative;
+	margin-top: 20px;
+}
+
 /* “no result found” 文本 */
 .no-result {
 	font-size: 20px;
@@ -293,6 +266,7 @@ onMounted(() => {
 	display: flex;
 	flex-wrap: nowrap;
 	overflow-y: auto;
+	overflow-x: hidden;
 	flex-direction: column;
 	justify-content: flex-start;
 	/* Align items to the top (default for column direction) */

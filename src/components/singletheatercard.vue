@@ -29,6 +29,7 @@ const props = defineProps({
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
 .singlecardtoTheater {
 	display: flex;
 	flex-direction: column;
@@ -81,6 +82,7 @@ const props = defineProps({
 	font-size: 10px;
 	font-weight: 700;
 	line-height: 12.6px;
+	color: black;
 	text-underline-position: from-font;
 	text-decoration-skip-ink: none;
 }
