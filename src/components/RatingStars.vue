@@ -7,6 +7,9 @@
 
 <script setup>
 import { ref } from "vue";
+import starActive from "../assets/stars/star-active.svg";
+import starHalf from "../assets/stars/star-half.svg";
+import starInactive from "../assets/stars/star-inactive.svg";
 
 const props = defineProps({
   totalStars: {
@@ -37,11 +40,11 @@ const getStarImgUrl = (i) => {
   const ratingValue = localRating.value;
   let url = ''
   if (ratingValue >= i) {
-    url = "../assets/stars/star-active.svg";
+    url = starActive;
   } else if (ratingValue >= i - 0.5) {
-    url = "../assets/stars/star-half.svg";
+    url = starHalf;
   } else {
-    url = "../assets/stars/star-inactive.svg";
+    url = starInactive;
   }
   return new URL(url, import.meta.url).href;
 };
