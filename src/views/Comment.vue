@@ -419,6 +419,8 @@ const submitComment = async () => {
   font-family: Helvetica;
   font-size: 24px;
   font-weight: 700;
+
+  margin-bottom: 15px;
 }
 
 .imageContainer {
