@@ -1,9 +1,11 @@
 <script setup lang="js">
 import BackButton from "../components/BackButton.vue"
 import RatingStars from "../components/RatingStars.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import PostNewComment from "../services/PostNewComment";
+import Swal from "sweetalert2";
+import draggable from "vuedraggable";
 
 const fileInput = ref(null)
 
@@ -17,7 +19,12 @@ const route = useRoute()
 // trigger the input element to open file dialog
 const triggerUploadImg = () => {
   if (displayImgList.value.length >= 5) {
-    alert('You can only upload up to 5 images')
+    Swal.fire({
+      text: 'You can only upload up to 5 images',
+      icon: 'error',
+      showConfirmButton: true,
+      allowOutsideClick: false,
+    })
     return
   }
 
@@ -26,23 +33,43 @@ const triggerUploadImg = () => {
 
 // push new images to displayImgList
 const handleFileChange = (e) => {
-  console.log('handleFileChange called: ', e.target.files)
+  // console.log('handleFileChange called: ', e.target.files)
   const files = e.target.files
 
+  // check if the total number of images exceeds 5
   if (files.length + displayImgList.value.length > 5) {
-    alert('You can only upload up to 5 images')
+    Swal.fire({
+      text: 'You can only upload up to 5 images',
+      icon: 'error',
+      showConfirmButton: true,
+      allowOutsideClick: false,
+    })
     return
   }
 
-  const selectedImgList = []
+  // check if the image size exceeds 10MB
+  for (let key of Object.keys(files)) {
+    if (files[key].size > 10 * 1024 * 1024) {
+      Swal.fire({
+        text: 'Image size should be less than 10MB',
+        icon: 'info',
+        showConfirmButton: true,
+        timer: 3000,
+        timerProgressBar: true,
+      })
+      return
+    }
+  }
+
+  // push new images to displayImgList
   Object.keys(files).forEach((key) => {
-    selectedImgList.push({
+    displayImgList.value.push({
       localUrl: URL.createObjectURL(files[key]),
       fileObject: files[key],
+      index: key
     })
   })
-  console.log('selectedImages: ', selectedImgList)
-  displayImgList.value.push(...selectedImgList)
+
 }
 
 // delete image from displayImgList
@@ -52,25 +79,68 @@ const deleteImg = (index) => {
 
 // upload comment to server
 const submitComment = async () => {
-  console.log('submitComment called')
   try {
     // build request data
     const images = displayImgList.value.map((img) => img.fileObject)
     const showId = route.params.showId
     const seatId = route.params.seatId
 
-    const res = await PostNewComment(images, showId, seatId, seatRating.value, showRating.value, content.value, onUpdateCommentProgress)
-    console.log('post new comment res: ', res)
-    alert('Comment submitted successfully')
+    // check if images are uploaded
+    if (images.length === 0) {
+      Swal.fire({
+        text: 'Please upload at least one image',
+        icon: 'error',
+        showConfirmButton: true,
+        allowOutsideClick: false,
+      })
+      return
+    }
+
+    // check if ratings are given
+    if (seatRating.value === 0 || showRating.value === 0) {
+      Swal.fire({
+        text: 'Please give ratings for seat and show',
+        icon: 'error',
+        showConfirmButton: true,
+        allowOutsideClick: false,
+      })
+      return
+    }
+
+    // check if content is given
+    if (content.value === '') {
+      Swal.fire({
+        text: 'Please write some comments',
+        icon: 'error',
+        showConfirmButton: true,
+        allowOutsideClick: false,
+      })
+      return
+    }
+
+    // show loading
+    Swal.fire({
+      text: 'Uploading...',
+      showConfirmButton: true,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+    // network request
+    await PostNewComment(images, showId, seatId, seatRating.value, showRating.value, content.value)
+    // close loading
+    Swal.close()
+
   } catch (error) {
     console.log('post new comment error: ', error)
-    alert('Failed to submit comment')
+    Swal.fire({
+      text: 'Failed to submit comment, please try again later',
+      icon: 'error',
+      showConfirmButton: true,
+      allowOutsideClick: false,
+    })
   }
-}
-
-// callback function for updating comment progress changes
-const onUpdateCommentProgress = (progress) => {
-  console.log('onUpdateCommentProgress called: ', progress)
 }
 
 </script>
@@ -79,64 +149,74 @@ const onUpdateCommentProgress = (progress) => {
   <BackButton class="backBtn" />
   <h1 class="pageTitle">Comment</h1>
 
-  <!-- main -->
-  <div class="container">
+  <div class="bg">
+    <!-- main -->
+    <div class="container">
 
-    <div class="dialog">
-      <div class="ratingContainer">
-        <div class="title">Seat:</div>
-        <RatingStars class="star" v-model:rating="seatRating" :totalStars="5" mode="input" size="24" />
-      </div>
-
-      <div class="ratingContainer">
-        <div class="title">Show:</div>
-        <RatingStars class="star" v-model:rating="showRating" :totalStars="5" mode="input" size="24" />
-      </div>
-
-      <div class="commentTitle">Comment: </div>
-
-      <div class="commentContainer">
-        <textarea name="comment" id="comment" placeholder="Anything comes up to your mind……" v-model="content"
-          maxlength="200"></textarea>
-      </div>
-
-      <div class="imageContainer">
-        <!-- upload button -->
-        <div class="imgUploadBtn" @click.stop="triggerUploadImg">
-          <img src="../assets/camera.svg" alt="camera" />
-          <input multiple type="file" ref="fileInput" accept="image/jpeg, image/png, image/gif, image/bmp, image/webp"
-            @change="handleFileChange" style="display: none;" @click.stop="" />
+      <div class="dialog">
+        <div class="ratingContainer">
+          <div class="title">Seat:</div>
+          <RatingStars class="star" v-model:rating="seatRating" :totalStars="5" mode="input" size="24" />
         </div>
 
-        <!-- selected images -->
-        <div v-for="(img, index) in displayImgList" class="imgPreview">
-          <img :src="img.localUrl" :alt="img.sequence" class="imgPreview">
+        <div class="ratingContainer">
+          <div class="title">Show:</div>
+          <RatingStars class="star" v-model:rating="showRating" :totalStars="5" mode="input" size="24" />
+        </div>
 
-          <!-- close -->
-          <div class="closeBtn" @click="deleteImg(index)">
-            <img src="../assets/close-btn.svg" alt="close">
+        <div class="commentTitle">Comment: </div>
+
+        <div class="commentContainer">
+          <textarea name="comment" id="comment" placeholder="Anything comes up to your mind……" v-model="content"
+            maxlength="200"></textarea>
+        </div>
+
+        <div class="imageContainer">
+          <!-- upload button -->
+          <div class="imgUploadBtn" @click.stop="triggerUploadImg">
+            <img src="../assets/camera.svg" alt="camera" />
+            <input multiple type="file" ref="fileInput" accept="image/jpeg, image/png, image/gif, image/bmp, image/webp"
+              @change="handleFileChange" style="display: none;" @click.stop="" />
           </div>
+
+          <!-- selected images -->
+          <draggable class="imageSelectedContainer" v-model="displayImgList" itemKey="index">
+            <template #item="{ element, index }">
+              <div class="imgPreview">
+                <img :src="element.localUrl" :alt="element.index" class="imgPreview">
+                <div class="closeBtn" @click="deleteImg(index)">
+                  <img src="../assets/close-btn.svg" alt="close">
+                </div>
+              </div>
+            </template>
+          </draggable>
+
+          <span v-if="displayImgList.length > 1">* drag to reorder</span>
         </div>
 
       </div>
 
-    </div>
+      <div class="submitBtn" @click="submitComment">Submit</div>
 
-
-
-
-
-    <div class="submitBtn" @click="submitComment">Submit</div>
-
-    <!-- background -->
-    <div class="bg">
-      <img src="../assets/comment-background.png" alt="comment-background" />
+      <!-- background -->
+      <div class="bgImg">
+        <img src="../assets/comment-background.png" alt="comment-background" />
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .bg {
+  width: 100%;
+  height: calc(100vh - 100px);
+  overflow-y: scroll;
+
+  position: relative;
+  top: 100px;
+}
+
+.bgImg {
   width: 100%;
   height: 100%;
   position: fixed;
@@ -145,7 +225,7 @@ const onUpdateCommentProgress = (progress) => {
   z-index: -1;
 }
 
-.bg img {
+.bgImg img {
   height: 100%;
   width: 100%;
   object-fit: fill;
@@ -180,8 +260,6 @@ const onUpdateCommentProgress = (progress) => {
 }
 
 .container {
-  /* margin-top: 104px; */
-  top: 100px;
   left: 0;
   padding: 0 36px;
   position: relative;
@@ -343,6 +421,16 @@ const onUpdateCommentProgress = (progress) => {
   font-weight: 700;
 }
 
+.imageContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  position: relative;
+  min-height: 80px;
+}
+
 .imgUploadBtn {
   display: flex;
   width: 80px;
@@ -352,6 +440,10 @@ const onUpdateCommentProgress = (progress) => {
   flex-shrink: 0;
   border-radius: 10px;
   background: var(--main-Background-warm, #F3F0ED);
+
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .imgUploadBtn img {
@@ -359,11 +451,23 @@ const onUpdateCommentProgress = (progress) => {
   height: 18px;
 }
 
-.imageContainer {
+.imageContainer .imageSelectedContainer {
   width: 100%;
   display: flex;
-  gap: 10px;
+  flex-direction: row;
   flex-wrap: wrap;
   margin-bottom: 10px;
+  gap: 10px;
+}
+
+.imageContainer .imageSelectedContainer> :first-child {
+  margin-left: 90px;
+}
+
+.imageContainer> :last-child {
+  text-align: left;
+  font-size: 10px;
+  font-style: italic;
+  color: grey;
 }
 </style>

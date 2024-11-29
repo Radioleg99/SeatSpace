@@ -5,7 +5,7 @@ import axiosInstance from './axios'
  * @param {File} images image file object
  * @param {Function} progress callback function to update progress
  */
-function PostNewComment(images, showId, seatId, seatRating, showRating, content, progress) {
+function PostNewComment(images, showId, seatId, seatRating, showRating, content, progress = null) {
 	return new Promise((resolve, reject) => {
 		const formData = new FormData()
 
@@ -25,6 +25,7 @@ function PostNewComment(images, showId, seatId, seatRating, showRating, content,
 					'Content-Type': 'multipart/form-data',
 				},
 				onUploadProgress: (progressEvent) => {
+					if (!progress) return
 					const currentProgress = Math.round((progressEvent.loaded / progressEvent.total) * 100)
 					progress(currentProgress)
 				},
