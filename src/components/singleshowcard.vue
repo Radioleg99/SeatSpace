@@ -60,7 +60,6 @@ const props = defineProps({
 .singlecardtoShow {
 	display: flex;
 	flex-direction: row;
-	align-items: center;
 	border-radius: 20px;
 	width: 360px;
 	height: 200px;
@@ -69,23 +68,29 @@ const props = defineProps({
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	/* 边框为淡灰色 */
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	flex-shrink: 0;
 	/* 可选：增加轻微阴影 */
 }
 
 .img-box {
 	display: flex;
 	margin-left: 12px;
+	margin-top: 12px;
 	width: 134px;
 	height: 175px;
 	border-radius: 7px;
 	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .rightBox {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 	margin-left: 19px;
+	margin-right: 11px;
+	text-align: left;
 }
 
 .title {
@@ -93,24 +98,28 @@ const props = defineProps({
 	font-size: 20px;
 	font-weight: 700;
 	line-height: 22px;
-	text-align: center;
 	color: #333;
-	margin-top: 25px;
-	margin-bottom: 75px;
+	margin-top: 36px;
+	text-align: left;
 }
 
 .contentBox {
+	position: absolute;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
+	bottom: 23px;
 	gap: 7px;
 }
-
 .locationContent,
 .timeContent {
 	display: flex;
 	align-items: center;
 	color: black;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 150px;
 }
 
 .locationIcon,
@@ -127,6 +136,9 @@ const props = defineProps({
 	font-weight: 400;
 	line-height: 10px;
 	color: black;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .rankContent {

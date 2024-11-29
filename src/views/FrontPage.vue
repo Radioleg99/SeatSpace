@@ -97,7 +97,7 @@ onMounted(async () => {
 <template>
 	<div class="frontpage-layout">
 		<div class="fpbackground-color"></div>
-		<!-- <img class="fpbackground-img" src="../assets/background/frontpage.svg" alt="background" /> -->
+		<img class="fpbackground-img" src="../assets/frontpage-background.svg" alt="background" />
 		<div class="head-Layout">
 			<div class="title">SeatSpace</div>
 			<button class="search-Button" @click="handleSearchClick">
@@ -301,9 +301,6 @@ onMounted(async () => {
 	width: 325px;
 	height: 238px;
 	background: linear-gradient(360deg, #ffffff 0%, #e9ebea 100%);
-	/* 白色背景带透明度 */
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	/* 边框为淡灰色 */
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 	/* 可选：增加轻微阴影 */
 	margin-left: 16px;
@@ -312,7 +309,6 @@ onMounted(async () => {
 .theater-img {
 	width: 100%;
 	height: 142px;
-	margin-bottom: 11px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
 	object-fit: cover;
@@ -321,7 +317,8 @@ onMounted(async () => {
 .theater-card {
 	width: 100%;
 	height: 96px;
-	padding: 10px 16.5px;
+	margin-top: 11px;
+	margin-left: 16.5px;
 	justify-content: flex-start;
 }
 
@@ -354,14 +351,19 @@ onMounted(async () => {
 }
 
 .theater-description {
-	display: flex;
-	margin-left: 10px;
-	font-size: 10px;
-	font-family: Sora;
-	color: #2f2f42;
-	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
 	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 10.08px;
+	font-size: 8px;
+	font-family: Sora;
+	color: #666666;
 	max-height: 45px;
+	max-width: 288px;
+	margin-left: 10px;
+	text-align: left;
 }
 
 /* show-container */
@@ -421,10 +423,17 @@ onMounted(async () => {
 	height: 139px;
 	margin-bottom: 5px;
 	border-radius: 10px;
+	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .show-name {
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 	text-align: center;
+	text-overflow: ellipsis;
 	font-size: 13px;
 	line-height: 14px;
 	font-family: Helvetica;

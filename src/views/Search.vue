@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import axiosInstance from '../services/axios'
 import singletheaterCard from '../components/singletheaterCard.vue'
 import singleshowCard from '../components/singleShowcard.vue'
-import backButton from '../components/backButton.vue'
+import backButton from '../components/BackButton.vue'
 
 const router = useRouter()
 const searchQuery = ref('') // Bound to the search input
