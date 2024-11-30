@@ -82,7 +82,7 @@ function jumpToCommentPage() {
   router.push(`/comment/${route.params.id}/${currentChosedSeatId}`)
 }
 
-// canvas render function
+// canvas render function set, multiple funcitons are included
 function renderSeatCanvas(hallLayoutData) {
   // create stage for all items
   const stageData = {
@@ -234,10 +234,10 @@ function renderSeatCanvas(hallLayoutData) {
   }
 
   function calculateSeatColor(rating) {
-    if (rating < 0) {
+    if (rating <= 0) {
       return 'grey'
     }
-    else if (rating >= 0 && rating < 1) {
+    else if (rating > 0 && rating < 1) {
       return 'red'
     } else if (rating >= 1 && rating < 3) {
       return 'yellow'
