@@ -1,9 +1,9 @@
 import axiosInstance from './axios'
 
-function getSeatComments(seatId) {
+function getSeatComments(seatId, page) {
 	return new Promise((resolve, reject) => {
 		axiosInstance
-			.get(`/seat/${seatId}`)
+			.get(`/seat/${seatId}`, {page: page.value})
 			.then((res) => {
 				resolve(res.data.comments)
 			})
