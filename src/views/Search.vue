@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axiosInstance from '../services/axios'
 import singletheaterCard from '../components/singletheaterCard.vue'
-import singleshowCard from '../components/singleShowcard.vue'
+import singleshowCard from '../components/singleshowcard.vue'
 import backButton from '../components/BackButton.vue'
 
 const router = useRouter()
