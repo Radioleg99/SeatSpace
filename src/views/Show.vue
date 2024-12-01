@@ -796,24 +796,15 @@ function renderSeatCanvas(hallLayoutData) {
 	/* 根据需要调整图标大小 */
 	height: 20px;
 	animation: rotate 1s linear infinite;
-	margin-left: 50%;
+	display: block;
+	margin: 0 auto;
 }
 
 .end-indicator {
 	margin-top: 2px;
 	color: white;
 	font-size: 20px;
-	margin-left: 50%;
-}
-</style>
-<style>
-@keyframes rotate {
-	from {
-		transform: rotate(0deg);
-	}
-
-	to {
-		transform: rotate(360deg);
-	}
+	display: block;
+	margin: 0 auto;
 }
 </style>

@@ -15,6 +15,7 @@ const page = ref(1) // 当前页码
 const isLoading = ref(false) // 加载状态
 const isEnd = ref(false) // 是否到达末尾
 const containerRef = ref(null) // 引用滚动容器
+const MIN_LOADING_TIME = 3000 // 最小加载时间
 
 // Helper function to check network status
 const checkConnection = () => {
@@ -24,50 +25,91 @@ const checkConnection = () => {
 	}
 	return true
 }
-
-// 搜索功能
+const resetSearchState = () => {
+	hasSearched.value = false
+	showNoResult.value = false
+	resultList.value = []
+	page.value = 1
+	isLoading.value = false
+	isEnd.value = false
+}
+const fetchSearchResults = async (query, pageNumber) => {
+	try {
+		const response = await axiosInstance.get('/search', {
+			params: {
+				search_content: query,
+				page: pageNumber,
+			},
+		})
+		return response.data || []
+	} catch (error) {
+		return []
+	}
+}
+const processSearchResults = (newSearchResults) => {
+	if (newSearchResults.length > 0) {
+		resultList.value = [...resultList.value, ...newSearchResults]
+		page.value++
+	} else {
+		isEnd.value = true
+	}
+	showNoResult.value = resultList.value.length === 0
+	if (showNoResult.value) {
+		console.warn('未找到与查询相关的结果。')
+	}
+}
+// 执行搜索的函数
 const performSearch = async () => {
 	const query = searchQuery.value.trim()
 	if (!query) {
-		// 如果搜索内容为空，则不进行搜索
-		console.log('Search query is empty. Resetting search results.')
-		hasSearched.value = false
-		resultList.value = []
-		showNoResult.value = false
+		resetSearchState()
 		return
 	}
 
-	// Check for internet connection before making the request
+	// 检查网络连接
 	if (!checkConnection()) {
-		console.error('Not connected to the internet. Cannot perform search.')
+		console.error('NO NET')
 		showNoResult.value = true
 		return
 	}
 
 	hasSearched.value = true
-	try {
-		console.log('Performing search with query:', query)
-		const response = await axiosInstance.get('/search', {
-			params: {
-				search_content: query,
-				page: 1,
-			},
-		})
-		// 切分数据的方式取决于服务器返回的数据结构
-		resultList.value = response.data
-		console.log('Search results:', response.data)
 
-		// Check if both lists are empty
-		showNoResult.value = resultList.value.length === 0 && resultList.value.length === 0
-		if (showNoResult.value) {
-			console.warn('No results found for the query:', query)
-		}
+	// 如果正在加载或已到达末尾，直接返回
+	if (isLoading.value || isEnd.value) return
+
+	isLoading.value = true
+	const minLoadingPromise = new Promise((resolve) => setTimeout(resolve, MIN_LOADING_TIME))
+
+	try {
+		console.log('Search', query)
+		const newSearchResults = await fetchSearchResults(query, page.value)
+		processSearchResults(newSearchResults)
 	} catch (err) {
-		console.error('Search failed:', err.message)
-		resultList.value = [] // 清空搜索结果
-		hasSearched.value = true
-		showNoResult.value = true // 如果出错，显示“无结果”
+		if (page.value === 1) resultList.value = []
+		showNoResult.value = true
+	} finally {
+		await minLoadingPromise
+		isLoading.value = false
 	}
+}
+
+// 处理滚动事件的函数
+const handleScroll = () => {
+	const container = containerRef.value
+	if (!container || isLoading.value || isEnd.value) return
+
+	const nearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 10
+
+	if (nearBottom) {
+		console.log('Near bottom. Loading more search results.')
+		performSearch()
+	}
+}
+
+const startSearch = () => {
+	resetSearchState()
+	performSearch()
 }
 
 const goToTheaterDetail = (theaterId) => {
@@ -93,8 +135,8 @@ onMounted(() => {
 		<backButton></backButton>
 		<!-- 搜索框 -->
 		<div class="searchBox">
-			<input v-model.lazy="searchQuery" class="searchboxDescription" placeholder="theater name, show name, etc." @keyup.enter="performSearch" />
-			<button class="searchButton" @click="performSearch">
+			<input v-model.lazy="searchQuery" class="searchboxDescription" placeholder="theater name, show name, etc." @keyup.enter="startSearch" />
+			<button class="searchButton" @click="startSearch">
 				<img class="searchIcon" src="../assets/icon/search.svg" alt="search" />
 			</button>
 		</div>
@@ -102,7 +144,7 @@ onMounted(() => {
 		<!-- 搜索结果显示 -->
 		<div v-if="hasSearched">
 			<div v-if="showNoResult" class="no-result">No result found</div>
-			<div v-else class="search-results">
+			<div v-else class="search-results" ref="containerRef" @scroll="handleScroll">
 				<div v-for="(result, index) in resultList" :key="result.data.theaterId || result.data.showId || index">
 					<div v-if="result.itemType === 'theater'">
 						<singletheaterCard :image="result.data.imgUrl" :name="result.data.name" :description="result.data.description" @click="goToTheaterDetail(result.data.theaterId)" />
@@ -118,8 +160,13 @@ onMounted(() => {
 						/>
 					</div>
 				</div>
+				<div v-if="isLoading && !isEnd">
+					<img src="../assets/icon/refresh.svg" alt="Loading..." class="rotating-icon" />
+				</div>
+				<div v-if="isEnd" class="end-indicator">No more results</div>
 			</div>
 		</div>
+		<div class="decoration"></div>
 	</div>
 </template>
 
@@ -265,23 +312,38 @@ onMounted(() => {
 .search-results {
 	display: flex;
 	flex-wrap: nowrap;
-	overflow-y: auto;
+	overflow-y: scroll;
 	overflow-x: hidden;
 	flex-direction: column;
 	justify-content: flex-start;
-	/* Align items to the top (default for column direction) */
 	align-items: center;
-	/* Center items horizontally */
 	gap: 18px;
-	/* Gap between items in the vertical direction */
 	margin-top: 25px;
-	/* Space above the entire container */
+	max-height: 87vh;
 	scrollbar-width: none;
-	/* Firefox */
+}
+.rotating-icon {
+	width: 20px;
+	/* 根据需要调整图标大小 */
+	height: 20px;
+	animation: rotate 1s linear infinite;
 }
 
-/* 响应式设计 */
-@media screen and (max-width: 768px) {
-	/* 根据需要调整移动端样式 */
+.end-indicator {
+	margin-top: 2px;
+	color: white;
+	font-size: 20px;
+	margin-bottom: 20px;
+}
+</style>
+<style>
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
 }
 </style>
