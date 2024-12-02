@@ -10,9 +10,9 @@ import RatingStars from '../components/RatingStars.vue';
 import getSeatComments from '../services/getSeatComments.js';
 import router from '../router/index.js';
 import axiosInstance from '../services/axios.js';
-import getShowComments from '../services/getShowComments.js';
 import getShowBasicInfo from '../services/getShowBasicInfo.js';
 import Swal from 'sweetalert2';
+import showImgPreview from '../utils/showImgPreview.js';
 
 const route = useRoute()
 
@@ -68,8 +68,6 @@ const handleScroll = () => {
   }
 }
 
-
-
 onMounted(async () => {
   console.log('Show ID:', route.params.id)
 
@@ -84,9 +82,9 @@ onMounted(async () => {
 
   getHallLayoutData(route.params.id).then(seatLayoutData => {
     renderSeatCanvas(seatLayoutData)
-    Swal.close()
   }).catch(err => {
     console.log(err)
+  }).finally(() => {
     Swal.close()
   })
 
@@ -405,7 +403,8 @@ function renderSeatCanvas(hallLayoutData) {
 
     <!-- comments container -->
     <div class="seatCommentPopContainer">
-      <div class="singleCommentContainer" v-for="comment in commentsList">
+      <div class="singleCommentContainer" v-for="comment in commentsList"
+        @click.prevent="showImgPreview(comment.imgUrl)">
         <RatingStars :rating="comment.rating" class="ratingStars" size="19.5" />
         <div class="imgMask"></div>
         <img :src="comment.imgUrl" alt="star" class="commentImg" />
@@ -445,7 +444,8 @@ function renderSeatCanvas(hallLayoutData) {
     <div class="showCommentsChangeBox" ref="containerRef" @scroll="handleScroll">
       <div v-for="comment in showComments" class="commentBox">
         <div class="commentImgBox">
-          <img v-for="img in comment.imgUrl" :src="img" alt="commentImg" class="commentImg" />
+          <img v-for="img in comment.imgUrl" :src="img" alt="commentImg" class="commentImg"
+            @click="showImgPreview(img)" />
         </div>
         <div class="commentText">{{ comment.comment }}</div>
         <div class="commentStar">
