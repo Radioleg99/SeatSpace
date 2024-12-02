@@ -230,6 +230,14 @@ function renderSeatCanvas(hallLayoutData) {
       fill: seatColor,
     });
 
+    const bg = new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: seatWidth,
+      height: seatHeight,
+      fill: 'transparent',
+    });
+
     // create seat number text
     const seatNumber = new Konva.Text({
       x: 0,
@@ -241,6 +249,7 @@ function renderSeatCanvas(hallLayoutData) {
     seatNumber.x(seatWidth / 2 - seatNumber.width() / 2)
 
     // add seat and seat number to group
+    seatGroup.add(bg)
     seatGroup.add(seat)
     seatGroup.add(seatNumber)
 
