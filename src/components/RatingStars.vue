@@ -1,12 +1,18 @@
 <template>
-  <div class="rating" @touchstart.prevent="updateRating" @touchmove.prevent="updateRating">
+  <div
+    class="rating"
+    @touchstart.prevent="updateRating"
+    @touchmove.prevent="updateRating"
+    @mousedown.prevent="updateRating"
+    @mousemove.prevent="updateRating"
+  >
     <img v-for="i in totalStars" :key="i" class="star" :src="getStarImgUrl(i)" alt="star"
       :height="parseFloat(size) + 'px'" />
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import starActive from "../assets/stars/star-active.svg";
 import starHalf from "../assets/stars/star-half.svg";
 import starInactive from "../assets/stars/star-inactive.svg";
@@ -36,6 +42,13 @@ const emit = defineEmits(["update:rating"]);
 const { totalStars, mode, size, rating } = props;
 const localRating = ref(rating)
 
+watch(
+  () => props.rating,
+  (value) => {
+    localRating.value = value
+  }
+)
+
 const getStarImgUrl = (i) => {
   const ratingValue = localRating.value;
   let url = ''
@@ -52,9 +65,11 @@ const getStarImgUrl = (i) => {
 // updaterating when touchstart or touchmove
 const updateRating = (event) => {
   if (mode !== "input") return;
+  if (event.type === 'mousemove' && event.buttons === 0) return
   const rect = event.currentTarget.getBoundingClientRect();
-  const touch = event.touches[0];
-  const offsetX = touch.clientX - rect.left;
+  const point = event.touches && event.touches[0] ? event.touches[0] : event
+  if (!point || typeof point.clientX !== 'number') return
+  const offsetX = point.clientX - rect.left;
   const starWidth = rect.width / totalStars;
   const ratingValue = Math.min(Math.ceil((offsetX / starWidth) * 2) / 2, totalStars);
   localRating.value = ratingValue;

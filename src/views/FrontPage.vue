@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import axiosInstance from '../services/axios'
+import axiosInstance, { isMockApi } from '../services/axios'
 import { useRouter } from 'vue-router'
 
 // this is for using push to navigate
@@ -11,6 +11,12 @@ const theaterList = ref([])
 const showList = ref([])
 
 const getLocation = async () => {
+	if (isMockApi) {
+		// Fake coordinates let the nearby endpoint resolve instantly while we are offline.
+		latitude.value = '31.2304'
+		longitude.value = '121.4737'
+		return
+	}
 	try {
 		const response = await fetch('https://ipinfo.io/json?token=5664e0eedfcb9a')
 		const data = await response.json()

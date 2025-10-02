@@ -256,7 +256,7 @@ function renderSeatCanvas(hallLayoutData) {
     // add click event to seat
     seatGroup.on('click tap', async (e) => {
       const currentSeatId = e.currentTarget.attrs.seatId
-      const page = 2;
+      const page = 1;
       console.log('clicked on seat', currentSeatId);
       isCommentPop.value = true
       Swal.fire({
